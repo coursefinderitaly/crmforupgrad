@@ -6,7 +6,14 @@ export type PipelineStage =
   | 'shortlisting'
   | 'student_approval'
   | 'application'
-  | 'offer_received';
+  | 'offer_received'
+  | 'final_university'
+  | 'scholarship'
+  | 'pre_enrolment'
+  | 'dov_cimea'
+  | 'visa_process'
+  | 'pre_departure'
+  | 'completed';
 
 export interface DocumentItem {
   id: string;
@@ -60,6 +67,132 @@ export interface ApplicationRecord {
   applicationNumber?: string;
   notes?: string;
   offerLetterUrl?: string;
+}
+
+export interface OfferLetterItem {
+  id: string;
+  universityId?: string;
+  universityName: string;
+  course: string;
+  country: string;
+  intake: string;
+  type: 'Unconditional' | 'Conditional';
+  status: 'Received' | 'Accepted' | 'Declined' | 'Under Verification';
+  conditions?: string;
+  issuedDate: string;
+  deadline: string;
+  depositAmount: string;
+  depositPaid?: boolean;
+  scholarshipAwarded?: string;
+  portalLink?: string;
+  fileUrl?: string;
+}
+
+export interface FinalUniversityData {
+  universityId: string;
+  universityName: string;
+  course: string;
+  country: string;
+  city: string;
+  intake: string;
+  tuitionFee: string;
+  depositAmount: string;
+  depositStatus: 'Paid' | 'Pending' | 'Waived';
+  depositReceiptRef?: string;
+  depositDate?: string;
+  studentAgreementSigned: boolean;
+  signedDate?: string;
+  acceptanceLetterReceived: boolean;
+  portalCredentialsCreated: boolean;
+  notes?: string;
+}
+
+export interface ScholarshipData {
+  schemeName: string;
+  country: string;
+  status: 'Eligible' | 'Applied' | 'Dossier Under Review' | 'Awarded' | 'Rejected';
+  grantAmount: string;
+  iseeParificatoScore?: string;
+  cafSubmissionDate?: string;
+  apostilledIncomeDoc: boolean;
+  familyPropertyCertificate: boolean;
+  bankSolvencySubmitted: boolean;
+  deadline: string;
+  dossierNotes?: string;
+}
+
+export interface PreEnrolmentData {
+  portal: 'Universitaly' | 'Uni-Assist' | 'UCAS' | 'Direct';
+  applicationRef: string;
+  targetEmbassy: string;
+  submissionDate?: string;
+  status: 'Draft' | 'Submitted' | 'Under Faculty Validation' | 'Summary Approved (Riepilogo Issued)' | 'Revision Needed';
+  riepilogoSummaryIssued: boolean;
+  riepilogoDate?: string;
+  riepilogoDocUrl?: string;
+  facultyValidatorName?: string;
+  notes?: string;
+}
+
+export interface DovCimeaData {
+  preferredRoute: 'CIMEA DiploMe' | 'Embassy DoV' | 'Both';
+  diploMeRef?: string;
+  comparabilityStatus: 'Not Started' | 'Dossier Uploaded' | 'Payment Complete' | 'Under Verification' | 'Certificate Issued';
+  verificationStatus: 'Pending' | 'Completed';
+  apostilledDegree: boolean;
+  apostilledTranscripts: boolean;
+  certifiedItalianTranslation: boolean;
+  certificateIssueDate?: string;
+  notes?: string;
+}
+
+export interface VisaChecklistItem {
+  id: string;
+  label: string;
+  category: 'Mandatory' | 'Financial' | 'Academic' | 'Travel';
+  checked: boolean;
+  notes?: string;
+}
+
+export interface VisaProcessData {
+  visaType: string;
+  vfsCenter: string;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  appointmentStatus: 'Pending Booking' | 'Confirmed' | 'Biometrics Completed';
+  status: 'File Preparation' | 'VFS Appointment Booked' | 'Submitted to Embassy' | 'Under Processing' | 'Visa Approved & Stamped' | 'Refused';
+  trackingNumber?: string;
+  solvencyAmountDemonstrated: string;
+  accommodationProofType: string;
+  insurancePolicyNumber: string;
+  checklist: VisaChecklistItem[];
+  stampedDate?: string;
+  visaValidUntil?: string;
+  embassyInterviewNotes?: string;
+}
+
+export interface PreDepartureData {
+  flightBooked: boolean;
+  airline?: string;
+  flightNo?: string;
+  departureDate?: string;
+  departureCity?: string;
+  arrivalAirport?: string;
+  arrivalDate?: string;
+  airportPickupScheduled: boolean;
+  pickupDriverContact?: string;
+  codiceFiscaleStatus: 'Pending' | 'Generated & Verified';
+  codiceFiscaleNumber?: string;
+  forexCardIssued: boolean;
+  forexCardNumber?: string;
+  eSimActivated: boolean;
+  italianSimNumber?: string;
+  permessoKitReady: boolean;
+  accommodationAddress?: string;
+  orientationAttended: boolean;
+  orientationDate?: string;
+  lifecycleStatus: 'Pre-Departure Briefing' | 'In Transit' | 'Landed & Registered' | 'Enrolled Abroad 🎉';
+  notes?: string;
 }
 
 export interface Student {
@@ -141,6 +274,15 @@ export interface Student {
   studentApprovalStatus: 'Pending Review' | 'Approved' | 'Revision Requested';
   studentApprovalDate?: string;
   applications: ApplicationRecord[];
+  
+  // Downstream lifecycle stage data
+  offerLetters?: OfferLetterItem[];
+  finalUniversityChoice?: FinalUniversityData;
+  scholarshipDossier?: ScholarshipData;
+  preEnrolmentDossier?: PreEnrolmentData;
+  dovCimeaDossier?: DovCimeaData;
+  visaProcessDossier?: VisaProcessData;
+  preDepartureDossier?: PreDepartureData;
   
   // Internal notes & history
   internalNotes: string;

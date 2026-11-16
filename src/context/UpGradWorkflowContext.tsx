@@ -1,5 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Student, TaskItem, UniversityOption, DocumentItem, ApplicationRecord } from '../types/crm';
+import {
+  Student,
+  TaskItem,
+  UniversityOption,
+  DocumentItem,
+  ApplicationRecord,
+  PipelineStage,
+  OfferLetterItem,
+  FinalUniversityData,
+  ScholarshipData,
+  PreEnrolmentData,
+  DovCimeaData,
+  VisaProcessData,
+  PreDepartureData,
+} from '../types/crm';
 import { INITIAL_STUDENTS, INITIAL_TASKS, DEFAULT_UNIVERSITIES } from '../data/initialData';
 
 interface AuthUser {
@@ -43,6 +57,17 @@ interface UpGradContextType {
   recordStudentApproval: (studentId: string, approvedUniIds: string[]) => void; // Transfers to Application Team
   advanceApplicationStep: (studentId: string, appId: string, step: 1 | 2 | 3 | 4 | 5 | 6) => void;
   issueOfferLetter: (studentId: string, appId: string) => void;
+
+  // Interlinked lifecycle stage promotions & dossier updates
+  advanceToStage: (studentId: string, stage: PipelineStage, note?: string) => void;
+  addOfferLetter: (studentId: string, offer: Partial<OfferLetterItem>) => void;
+  updateOfferLetter: (studentId: string, offerId: string, updates: Partial<OfferLetterItem>) => void;
+  confirmFinalUniversity: (studentId: string, data: Partial<FinalUniversityData>) => void;
+  updateScholarshipDossier: (studentId: string, data: Partial<ScholarshipData>) => void;
+  updatePreEnrolmentDossier: (studentId: string, data: Partial<PreEnrolmentData>) => void;
+  updateDovCimeaDossier: (studentId: string, data: Partial<DovCimeaData>) => void;
+  updateVisaProcessDossier: (studentId: string, data: Partial<VisaProcessData>) => void;
+  updatePreDepartureDossier: (studentId: string, data: Partial<PreDepartureData>) => void;
 
   // Task & general actions
   toggleTask: (taskId: string) => void;
