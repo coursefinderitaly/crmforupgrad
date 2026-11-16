@@ -116,6 +116,7 @@ export const ApplicationsView: React.FC = () => {
         currentStageId="applications"
         stageNumber={5}
         totalStages={12}
+        stageShortName="Direct Uni Submissions"
         title="University Applications Submission"
         subtitle="Manage student applications, portal submissions, tracking numbers, and admissions progression"
         icon={Send}
@@ -135,43 +136,6 @@ export const ApplicationsView: React.FC = () => {
           </button>
         }
       />
-
-      {/* ── 2. Student Dossier Banner ── */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#087cf5] to-cyan-500 text-white font-black text-base flex items-center justify-center shadow-xs shrink-0">
-            {student.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-extrabold text-slate-900 truncate">{student.name}</h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 shrink-0">
-                Application Stage Active
-              </span>
-            </div>
-            <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-              <span>Lead ID: <strong className="font-mono text-slate-700">{student.leadId}</strong></span>
-              <span>&bull;</span>
-              <span>Target: <strong className="text-slate-700">{student.countryInterest}</strong></span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-5 sm:gap-6 text-xs text-slate-600">
-          <div>
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Target Program</span>
-            <span className="font-bold text-slate-900">{student.courseInterest}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Intake</span>
-            <span className="font-bold text-slate-900">{student.intake}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Total Active Submissions</span>
-            <span className="font-black text-[#087cf5] text-sm">{student.applications.length} Universities</span>
-          </div>
-        </div>
-      </div>
 
       {/* ── 3. Top Metrics Row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

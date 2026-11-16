@@ -101,6 +101,7 @@ export const FinalUniversityView: React.FC = () => {
         currentStageId="final-university"
         stageNumber={7}
         totalStages={12}
+        stageShortName="Enrolment Seat Deposit"
         title="Final University Confirmation & Enrolment Deposit"
         subtitle="Finalize target destination, verify tuition seat deposits, student agreement contracts, and official university registration"
         icon={Building2}

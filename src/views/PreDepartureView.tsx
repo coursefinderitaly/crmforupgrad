@@ -125,6 +125,7 @@ export const PreDepartureView: React.FC = () => {
         currentStageId="pre-departure"
         stageNumber={12}
         totalStages={12}
+        stageShortName="Relocation & Arrival"
         title="Pre-Departure Orientation, Relocation &amp; Arrival"
         subtitle="Coordinate flight bookings, airport pickup, Italian Codice Fiscale, European eSIMs, Forex cards, and 8-day Permesso di Soggiorno kits"
         icon={Compass}

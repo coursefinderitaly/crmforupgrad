@@ -119,6 +119,7 @@ export const VisaProcessView: React.FC = () => {
         currentStageId="visa-process"
         stageNumber={11}
         totalStages={12}
+        stageShortName="Study Visa Filing & VFS"
         title="Study Visa (Type D) Application &amp; VFS Filing"
         subtitle="Schedule VFS embassy appointments, audit financial solvency proofs, verify 10-point visa files, and track embassy decisions"
         icon={Plane}

@@ -105,6 +105,7 @@ export const PreEnrolmentView: React.FC = () => {
         currentStageId="pre-enrolment"
         stageNumber={9}
         totalStages={12}
+        stageShortName="MUR Official Pre-Enrolment"
         title="Universitaly Official Pre-Enrolment Portal"
         subtitle="Manage Italian Ministry of University &amp; Research (MUR) pre-enrolment dossiers, faculty validations, and summary (Riepilogo) release"
         icon={Monitor}

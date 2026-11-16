@@ -172,6 +172,7 @@ export const OfferLettersView: React.FC = () => {
         currentStageId="offer-letters"
         stageNumber={6}
         totalStages={12}
+        stageShortName="Admissions & Decisions"
         title="Official Offer Letters Received"
         subtitle="Review admission offers, condition fulfillment, tuition deposit requirements, and student acceptance decisions"
         icon={Award}

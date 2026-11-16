@@ -95,6 +95,7 @@ export const DovCimeaView: React.FC = () => {
         currentStageId="dov-cimea"
         stageNumber={10}
         totalStages={12}
+        stageShortName="Degree Equivalence & Legalization"
         title="Declaration of Value (DoV) &amp; CIMEA Legalization"
         subtitle="Manage academic equivalence verification, MEA apostille stamps, official Italian translations, and CIMEA DiploMe statements"
         icon={FileText}

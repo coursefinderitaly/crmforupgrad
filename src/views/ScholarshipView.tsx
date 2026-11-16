@@ -97,6 +97,7 @@ export const ScholarshipView: React.FC = () => {
         currentStageId="scholarship"
         stageNumber={8}
         totalStages={12}
+        stageShortName="Regional DSU Grants"
         title="Scholarship Tracking &amp; Financial Aid Grants"
         subtitle="Manage Italian regional DSU scholarships, ISEE Parificato income certificates, apostille verification, and university merit waivers"
         icon={Sparkles}
