@@ -88,28 +88,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenRegisterModal }) => {
   ];
 
   return (
-    <aside className="w-60 bg-[#07182c] text-slate-300 flex flex-col justify-between shrink-0 min-h-screen select-none border-r border-[#152e4d]">
-      <div className="overflow-y-auto max-h-screen scrollbar-none">
-        {/* Brand Header */}
-        <div className="p-3.5 border-b border-[#132c4a] flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#087cf5] to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-950/40 shrink-0">
-            <GraduationCap className="w-5 h-5 stroke-[2.2]" />
+    <aside className="w-60 bg-[#07182c] text-slate-300 flex flex-col shrink-0 h-screen sticky top-0 select-none border-r border-[#152e4d] z-30">
+      {/* Brand Header */}
+      <div className="p-3.5 border-b border-[#132c4a] flex items-center gap-2.5 shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#087cf5] to-blue-400 flex items-center justify-center text-white shadow-md shadow-blue-950/40 shrink-0">
+          <GraduationCap className="w-5 h-5 stroke-[2.2]" />
+        </div>
+        <div className="overflow-hidden min-w-0">
+          <div className="font-extrabold text-white text-[13px] tracking-tight leading-tight flex items-center gap-1.5 truncate">
+            <span>Presume</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-red-600/30 text-red-300 border border-red-500/30 shrink-0">
+              upGrad
+            </span>
           </div>
-          <div className="overflow-hidden min-w-0">
-            <div className="font-extrabold text-white text-[13px] tracking-tight leading-tight flex items-center gap-1.5 truncate">
-              <span>Presume</span>
-              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-red-600/30 text-red-300 border border-red-500/30 shrink-0">
-                upGrad
-              </span>
-            </div>
-            <div className="text-[9.5px] text-slate-400 font-medium truncate leading-tight mt-0.5">
-              Overseas Education (OPC) Pvt. Ltd.
-            </div>
+          <div className="text-[9.5px] text-slate-400 font-medium truncate leading-tight mt-0.5">
+            Overseas Education (OPC) Pvt. Ltd.
           </div>
         </div>
+      </div>
 
+      {/* Scrollable Navigation Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-2 py-2 space-y-0.5">
         {/* Main Lifecycle Navigation */}
-        <div className="px-2 py-2 space-y-0.5">
+        <div className="space-y-0.5">
           {mainLifecycleNav.map((item) => {
             const Icon = item.icon;
             const isActive = currentRoute === item.id;
@@ -143,10 +144,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenRegisterModal }) => {
         </div>
 
         {/* Divider */}
-        <div className="my-1.5 border-t border-[#132c4a]" />
+        <div className="my-2 border-t border-[#132c4a]" />
 
         {/* Secondary Management Navigation */}
-        <div className="px-2 pb-3 space-y-0.5">
+        <div className="space-y-0.5 pb-2">
           {secondaryNav.map((item) => {
             const Icon = item.icon;
             const isActive = currentRoute === item.id;
@@ -180,13 +181,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenRegisterModal }) => {
         </div>
       </div>
 
-      {/* Bottom Profile Footer */}
-      <div className="p-2.5 border-t border-[#132c4a] bg-[#051426]/70 flex items-center justify-between text-[11px]">
+      {/* Bottom Profile Footer: Permanently Docked at Bottom */}
+      <div className="p-3 border-t border-[#132c4a] bg-[#051426] shrink-0">
         <button
+          type="button"
           onClick={onOpenRegisterModal}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#087cf5] hover:bg-[#006ee6] text-white font-semibold shadow-xs transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#087cf5] hover:bg-[#006ee6] text-white font-bold text-xs shadow-md shadow-blue-950/50 active:scale-[0.98] transition-all cursor-pointer"
         >
-          <PlusCircle className="w-3.5 h-3.5 shrink-0" />
+          <PlusCircle className="w-4 h-4 shrink-0" />
           <span>New Student</span>
         </button>
       </div>
