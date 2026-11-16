@@ -390,3 +390,4 @@ export const FinalUniversityView: React.FC = () => {
     </div>
   );
 };
+

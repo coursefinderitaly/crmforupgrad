@@ -120,13 +120,13 @@ export const DashboardView: React.FC = () => {
       shortlisting: students.filter((s) => s.stage === 'shortlisting').length,
       studentApproval: students.filter((s) => s.stage === 'student_approval').length,
       applications: students.filter((s) => s.stage === 'application').length,
-      offerLetters: students.filter((s) => s.stage === 'offer_received').length,
-      finalUni: students.filter((s) => s.stage === 'offer_received' || s.approvedUniversities?.length > 0).length,
-      scholarship: students.filter((s) => s.scholarshipInterest).length,
-      preEnrolment: students.filter((s) => s.stage === 'offer_received').length,
-      dovCimea: students.filter((s) => s.stage === 'offer_received').length,
-      visa: students.filter((s) => s.stage === 'offer_received').length,
-      preDeparture: students.filter((s) => s.stage === 'offer_received').length,
+      offerLetters: students.filter((s) => s.stage === 'offer_received' || (s.offerLetters && s.offerLetters.length > 0)).length,
+      finalUni: students.filter((s) => s.stage === 'final_university' || Boolean(s.finalUniversityChoice) || s.approvedUniversities?.length > 0).length,
+      scholarship: students.filter((s) => s.stage === 'scholarship' || Boolean(s.scholarshipDossier) || s.scholarshipInterest).length,
+      preEnrolment: students.filter((s) => s.stage === 'pre_enrolment' || Boolean(s.preEnrolmentDossier)).length,
+      dovCimea: students.filter((s) => s.stage === 'dov_cimea' || Boolean(s.dovCimeaDossier)).length,
+      visa: students.filter((s) => s.stage === 'visa_process' || Boolean(s.visaProcessDossier)).length,
+      preDeparture: students.filter((s) => s.stage === 'pre_departure' || s.stage === 'completed' || Boolean(s.preDepartureDossier)).length,
       tasks: tasks.filter((t) => !t.completed).length,
     };
   }, [students, tasks]);
@@ -243,7 +243,7 @@ export const DashboardView: React.FC = () => {
       badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
       count: lifecycleStageCounts.finalUni,
       phase: 2,
-      isActiveStudentHere: false,
+      isActiveStudentHere: activeStudent?.stage === 'final_university' || Boolean(activeStudent?.finalUniversityChoice),
     },
     {
       step: '08',
@@ -259,7 +259,7 @@ export const DashboardView: React.FC = () => {
       badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
       count: lifecycleStageCounts.scholarship,
       phase: 2,
-      isActiveStudentHere: Boolean(activeStudent?.scholarshipInterest),
+      isActiveStudentHere: activeStudent?.stage === 'scholarship' || Boolean(activeStudent?.scholarshipDossier) || Boolean(activeStudent?.scholarshipInterest),
     },
     {
       step: '09',
@@ -275,7 +275,7 @@ export const DashboardView: React.FC = () => {
       badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
       count: lifecycleStageCounts.preEnrolment,
       phase: 2,
-      isActiveStudentHere: false,
+      isActiveStudentHere: activeStudent?.stage === 'pre_enrolment' || Boolean(activeStudent?.preEnrolmentDossier),
     },
     {
       step: '10',
@@ -291,7 +291,7 @@ export const DashboardView: React.FC = () => {
       badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
       count: lifecycleStageCounts.dovCimea,
       phase: 2,
-      isActiveStudentHere: false,
+      isActiveStudentHere: activeStudent?.stage === 'dov_cimea' || Boolean(activeStudent?.dovCimeaDossier),
     },
     {
       step: '11',
@@ -307,7 +307,7 @@ export const DashboardView: React.FC = () => {
       badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
       count: lifecycleStageCounts.visa,
       phase: 2,
-      isActiveStudentHere: false,
+      isActiveStudentHere: activeStudent?.stage === 'visa_process' || Boolean(activeStudent?.visaProcessDossier),
     },
     {
       step: '12',
@@ -323,7 +323,7 @@ export const DashboardView: React.FC = () => {
       badgeClass: 'bg-violet-50 text-violet-700 border-violet-200',
       count: lifecycleStageCounts.preDeparture,
       phase: 2,
-      isActiveStudentHere: false,
+      isActiveStudentHere: activeStudent?.stage === 'pre_departure' || activeStudent?.stage === 'completed' || Boolean(activeStudent?.preDepartureDossier),
     },
   ], [lifecycleStageCounts, activeStudent]);
 
@@ -362,18 +362,31 @@ export const DashboardView: React.FC = () => {
     switch (stage) {
       case 'registered':
       case 'counselling':
-        return 18;
+        return 10;
       case 'enrolled':
-        return 35;
+        return 18;
       case 'documentation':
-        return 52;
+        return 28;
       case 'shortlisting':
-        return 68;
+        return 38;
       case 'student_approval':
-        return 82;
+        return 48;
       case 'application':
-        return 92;
+        return 58;
       case 'offer_received':
+        return 68;
+      case 'final_university':
+        return 76;
+      case 'scholarship':
+        return 82;
+      case 'pre_enrolment':
+        return 88;
+      case 'dov_cimea':
+        return 92;
+      case 'visa_process':
+        return 96;
+      case 'pre_departure':
+      case 'completed':
         return 100;
       default:
         return 20;

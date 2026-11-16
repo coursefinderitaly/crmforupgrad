@@ -378,3 +378,4 @@ export const ScholarshipView: React.FC = () => {
     </div>
   );
 };
+

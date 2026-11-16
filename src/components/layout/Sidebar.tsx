@@ -41,6 +41,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenRegisterModal }) => {
     0
   );
 
+  const offersCount = students.filter(
+    (s) =>
+      s.stage === 'offer_received' ||
+      (s.offerLetters && s.offerLetters.length > 0) ||
+      (s.applications && s.applications.some((a) => a.currentStep === 6))
+  ).length;
+
+  const finalUniCount = students.filter(
+    (s) => s.stage === 'final_university' || Boolean(s.finalUniversityChoice)
+  ).length;
+
+  const scholarshipCount = students.filter(
+    (s) => Boolean(s.scholarshipInterest) || Boolean(s.scholarshipDossier)
+  ).length;
+
+  const visaCount = students.filter(
+    (s) => s.stage === 'visa_process' || Boolean(s.visaProcessDossier)
+  ).length;
+
   const pendingTasksCount = tasks.filter((t) => !t.completed).length;
 
   const mainLifecycleNav = [
@@ -50,12 +69,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenRegisterModal }) => {
     { id: 'shortlisting', label: 'University Shortlisting', icon: GraduationCap, badge: shortlistingCount },
     { id: 'student-approval', label: 'Student Approval', icon: CheckSquare },
     { id: 'applications', label: 'Applications', icon: Send, badge: applicationsCount },
-    { id: 'offer-letters', label: 'Offer Letters', icon: Award },
-    { id: 'final-university', label: 'Final University', icon: Building2 },
-    { id: 'scholarship', label: 'Scholarship', icon: Sparkles },
+    { id: 'offer-letters', label: 'Offer Letters', icon: Award, badge: offersCount },
+    { id: 'final-university', label: 'Final University', icon: Building2, badge: finalUniCount },
+    { id: 'scholarship', label: 'Scholarship', icon: Sparkles, badge: scholarshipCount },
     { id: 'pre-enrolment', label: 'Pre-Enrolment', icon: Monitor },
     { id: 'dov-cimea', label: 'DoV / CIMEA', icon: FileText },
-    { id: 'visa-process', label: 'Visa Process', icon: Plane },
+    { id: 'visa-process', label: 'Visa Process', icon: Plane, badge: visaCount },
     { id: 'pre-departure', label: 'Pre-Departure & Arrival', icon: Compass },
   ];
 
