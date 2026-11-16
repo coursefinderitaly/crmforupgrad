@@ -87,13 +87,19 @@ export interface Student {
   // Study preference
   countryInterest: string;
   courseInterest: string;
+  courseLevel?: string;
+  preferredCourse?: string;
+  alternativeCourses?: string[];
+  targetUniversity?: string;
   intake: string;
+  intakeDeadline?: string;
   budget: string;
   universityType: 'Public' | 'Private' | 'Blended Pathway';
   preferredCity: string;
   scholarshipInterest: boolean;
 
   // Academics
+  highestQualification?: string;
   tenthPercentage: string;
   tenthBoard: string;
   twelfthPercentage: string;
@@ -104,6 +110,7 @@ export interface Student {
   graduationYear: string;
   backlogs: string;
   educationGap: string;
+  workExperience?: string;
 
   // Tests
   testType: 'IELTS' | 'PTE' | 'TOEFL' | 'Duolingo' | 'Pending';
@@ -116,7 +123,15 @@ export interface Student {
   testDate: string;
   testStatus: 'Valid' | 'Accepted' | 'Under Review' | 'Pending';
 
-  // Workflow sections data
+  // Workflow sections data & Payment
+  enrollmentDate?: string;
+  servicePackage?: string;
+  agreementStatus?: 'Signed' | 'Pending' | 'Draft';
+  totalFee?: string;
+  amountPaid?: string;
+  balance?: string;
+  paymentSchedule?: { id: string; milestone: string; amount: string; status?: string }[];
+
   counsellingNotes: string;
   assignedCounsellor: string;
   assignedDocExecutive: string;
@@ -147,4 +162,3 @@ export interface TaskItem {
   tag: 'Due Now' | 'Upcoming' | 'High Priority';
   completed: boolean;
 }
-

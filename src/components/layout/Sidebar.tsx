@@ -2,7 +2,6 @@ import React from 'react';
 import {
   LayoutDashboard,
   Users,
-  UserCheck,
   FileCheck2,
   GraduationCap,
   CheckSquare,
@@ -47,7 +46,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenRegisterModal }) => {
   const mainLifecycleNav = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'students', label: 'Students', icon: Users, badge: students.length },
-    { id: 'counsellor', label: 'Counsellor', icon: UserCheck },
     { id: 'documentation', label: 'Documentation', icon: FileCheck2, badge: pendingDocsCount },
     { id: 'shortlisting', label: 'University Shortlisting', icon: GraduationCap, badge: shortlistingCount },
     { id: 'student-approval', label: 'Student Approval', icon: CheckSquare },

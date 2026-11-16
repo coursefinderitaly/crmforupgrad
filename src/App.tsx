@@ -21,7 +21,6 @@ import {
   DovCimeaView,
   VisaProcessView,
   PreDepartureView,
-  CounsellorView,
   FinanceView,
   HRView,
 } from './views/WorkflowStageViews';
@@ -52,7 +51,6 @@ const AppContent: React.FC = () => {
           {currentRoute === 'students' && (
             <MyStudentsView onOpenRegisterModal={() => setShowRegisterModal(true)} />
           )}
-          {currentRoute === 'counsellor' && <CounsellorView />}
           {currentRoute === 'documentation' && <DocumentationView />}
           {currentRoute === 'shortlisting' && <UniversityShortlistingView />}
           {currentRoute === 'student-approval' && <StudentApprovalView />}
