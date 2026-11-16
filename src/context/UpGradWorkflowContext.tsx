@@ -562,11 +562,35 @@ export const UpGradWorkflowProvider: React.FC<{ children: React.ReactNode }> = (
 
         const appName = s.applications.find((a) => a.id === appId)?.universityName || 'Application';
 
+        let currentOffers = s.offerLetters || [];
+        if (step === 6) {
+          const app = s.applications.find((a) => a.id === appId);
+          if (app && !currentOffers.some((o) => o.universityName === app.universityName)) {
+            const autoOffer: OfferLetterItem = {
+              id: `off-${app.id}`,
+              universityId: app.universityId,
+              universityName: app.universityName,
+              course: app.course,
+              country: app.country,
+              intake: s.intake,
+              type: 'Unconditional',
+              status: 'Received',
+              conditions: 'Direct Admission & Document Verification',
+              issuedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+              deadline: app.deadline || '15 Dec 2026',
+              depositAmount: '€150',
+              depositPaid: false,
+            };
+            currentOffers = [autoOffer, ...currentOffers];
+          }
+        }
+
         return {
           ...s,
           stage: step === 6 ? 'offer_received' : 'application',
           statusText: step === 6 ? 'Offer Letter Received 🎉' : `Application: ${stepStatusMap[step]}`,
           applications: updatedApps,
+          offerLetters: currentOffers,
           timeline: [
             {
               id: `tl-${Date.now()}`,
@@ -586,6 +610,370 @@ export const UpGradWorkflowProvider: React.FC<{ children: React.ReactNode }> = (
   // Direct offer issuance
   const issueOfferLetter = (studentId: string, appId: string) => {
     advanceApplicationStep(studentId, appId, 6);
+  };
+
+  // Interlinked lifecycle stage transitions & dossier management
+  const advanceToStage = (studentId: string, stage: PipelineStage, note?: string) => {
+    const stageStatusTextMap: Record<PipelineStage, string> = {
+      registered: 'Registered',
+      counselling: 'Counselling Done',
+      enrolled: 'Enrolled & Verified',
+      documentation: 'Documentation In Progress',
+      shortlisting: 'University Shortlisting',
+      student_approval: 'Awaiting Student Approval',
+      application: 'Application In Progress',
+      offer_received: 'Offer Letters Received 🎉',
+      final_university: 'Final University Confirmed',
+      scholarship: 'Scholarship Dossier In Progress',
+      pre_enrolment: 'Universitaly Pre-Enrolment Active',
+      dov_cimea: 'DoV & CIMEA Legalization',
+      visa_process: 'Study Visa Filing & VFS',
+      pre_departure: 'Pre-Departure & Arrival Ready',
+      completed: 'Enrolled Abroad · Success 🎉',
+    };
+
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        return {
+          ...s,
+          stage,
+          statusText: stageStatusTextMap[stage] || stage,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: note || `Pipeline stage updated to: ${stageStatusTextMap[stage] || stage}`,
+              user: currentUser?.name || 'CRM Team',
+              type: 'system',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const addOfferLetter = (studentId: string, offer: Partial<OfferLetterItem>) => {
+    const newOffer: OfferLetterItem = {
+      id: `off-${Date.now()}`,
+      universityName: offer.universityName || 'Partner University',
+      course: offer.course || 'Master Degree Program',
+      country: offer.country || 'Europe',
+      intake: offer.intake || 'Sept 2026',
+      type: offer.type || 'Unconditional',
+      status: offer.status || 'Received',
+      conditions: offer.conditions || 'None (Direct Admission)',
+      issuedDate: offer.issuedDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      deadline: offer.deadline || '15 Dec 2026',
+      depositAmount: offer.depositAmount || '€150',
+      depositPaid: offer.depositPaid || false,
+      scholarshipAwarded: offer.scholarshipAwarded,
+      portalLink: offer.portalLink,
+      fileUrl: offer.fileUrl,
+    };
+
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const currentOffers = s.offerLetters || [];
+        return {
+          ...s,
+          stage: 'offer_received',
+          statusText: 'Offer Letter Received 🎉',
+          offerLetters: [newOffer, ...currentOffers],
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Offer Letter added: ${newOffer.universityName} (${newOffer.type})`,
+              user: currentUser?.name || 'Admissions Team',
+              type: 'application',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const updateOfferLetter = (studentId: string, offerId: string, updates: Partial<OfferLetterItem>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const currentOffers = s.offerLetters || [];
+        const updatedOffers = currentOffers.map((o) => (o.id === offerId ? { ...o, ...updates } : o));
+        return {
+          ...s,
+          offerLetters: updatedOffers,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Offer updated: ${updates.status ? `Status is ${updates.status}` : 'Details updated'}`,
+              user: currentUser?.name || 'Admissions Officer',
+              type: 'application',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const confirmFinalUniversity = (studentId: string, data: Partial<FinalUniversityData>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const prevChoice = s.finalUniversityChoice || {
+          universityId: 'uni-padova',
+          universityName: 'University of Padova',
+          course: 'MSc Computer Science',
+          country: 'Italy 🇮🇹',
+          city: 'Padova',
+          intake: 'Sept 2026',
+          tuitionFee: '€2,400 / yr',
+          depositAmount: '€150',
+          depositStatus: 'Paid',
+          studentAgreementSigned: true,
+          acceptanceLetterReceived: true,
+          portalCredentialsCreated: true,
+        };
+        const updatedChoice: FinalUniversityData = {
+          ...prevChoice,
+          ...data,
+        };
+        return {
+          ...s,
+          stage: 'final_university',
+          statusText: `Final Uni Confirmed: ${updatedChoice.universityName}`,
+          finalUniversityChoice: updatedChoice,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Final University confirmed: ${updatedChoice.universityName}. Deposit: ${updatedChoice.depositStatus}.`,
+              user: currentUser?.name || 'Senior Admissions Lead',
+              type: 'system',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const updateScholarshipDossier = (studentId: string, data: Partial<ScholarshipData>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const prevScholarship = s.scholarshipDossier || {
+          schemeName: 'Regional DSU Financial Aid',
+          country: 'Italy 🇮🇹',
+          status: 'Applied',
+          grantAmount: '€7,200/yr + 100% Tuition Waiver',
+          iseeParificatoScore: '€14,800',
+          apostilledIncomeDoc: true,
+          familyPropertyCertificate: true,
+          bankSolvencySubmitted: true,
+          deadline: '30 Nov 2026',
+        };
+        const updatedDossier: ScholarshipData = {
+          ...prevScholarship,
+          ...data,
+        };
+        return {
+          ...s,
+          scholarshipDossier: updatedDossier,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Scholarship dossier updated: ${updatedDossier.schemeName} (${updatedDossier.status})`,
+              user: currentUser?.name || 'Financial Aid Officer',
+              type: 'docs',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const updatePreEnrolmentDossier = (studentId: string, data: Partial<PreEnrolmentData>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const prevData = s.preEnrolmentDossier || {
+          portal: 'Universitaly',
+          applicationRef: `UNIV-2026-IT-${Math.floor(10000 + Math.random() * 90000)}`,
+          targetEmbassy: 'Embassy of Italy - New Delhi',
+          status: 'Submitted',
+          riepilogoSummaryIssued: true,
+          riepilogoDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        };
+        const updated: PreEnrolmentData = {
+          ...prevData,
+          ...data,
+        };
+        return {
+          ...s,
+          preEnrolmentDossier: updated,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Universitaly pre-enrolment updated: ${updated.status} (Ref: ${updated.applicationRef})`,
+              user: currentUser?.name || 'Universitaly Desk',
+              type: 'system',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const updateDovCimeaDossier = (studentId: string, data: Partial<DovCimeaData>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const prevData = s.dovCimeaDossier || {
+          preferredRoute: 'CIMEA DiploMe',
+          diploMeRef: `CIMEA-IT-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+          comparabilityStatus: 'Under Verification',
+          verificationStatus: 'Completed',
+          apostilledDegree: true,
+          apostilledTranscripts: true,
+          certifiedItalianTranslation: true,
+        };
+        const updated: DovCimeaData = {
+          ...prevData,
+          ...data,
+        };
+        return {
+          ...s,
+          dovCimeaDossier: updated,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `DoV / CIMEA dossier updated: ${updated.preferredRoute} (${updated.comparabilityStatus})`,
+              user: currentUser?.name || 'Legalization Desk',
+              type: 'docs',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const updateVisaProcessDossier = (studentId: string, data: Partial<VisaProcessData>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const prevData = s.visaProcessDossier || {
+          visaType: 'National Long-Stay (Type D) Study Visa',
+          vfsCenter: 'VFS Italy - New Delhi Shivaji Stadium',
+          appointmentDate: '15 Oct 2026',
+          appointmentTime: '09:30 AM',
+          appointmentStatus: 'Confirmed',
+          status: 'VFS Appointment Booked',
+          trackingNumber: `ITA/DEL/${Math.floor(100000 + Math.random() * 900000)}`,
+          solvencyAmountDemonstrated: '€6,500 (~₹6,00,000)',
+          accommodationProofType: 'University Residence Padova Confirmation',
+          insurancePolicyNumber: 'BA-SCH-998242',
+          checklist: [
+            { id: 'vc-1', label: 'Universitaly Summary Sheet (Riepilogo)', category: 'Mandatory', checked: true },
+            { id: 'vc-2', label: 'Official University Admission Letter', category: 'Mandatory', checked: true },
+            { id: 'vc-3', label: 'CIMEA Statement of Comparability / DoV', category: 'Academic', checked: true },
+            { id: 'vc-4', label: 'Financial Solvency Proof (€6,000+ Holding)', category: 'Financial', checked: true },
+            { id: 'vc-5', label: 'Accommodation Proof / Student Housing Lease', category: 'Travel', checked: true },
+            { id: 'vc-6', label: 'Schengen Travel Health Insurance (€30,000)', category: 'Travel', checked: true },
+            { id: 'vc-7', label: 'Flight Dummy Ticket Itinerary', category: 'Travel', checked: true },
+            { id: 'vc-8', label: 'Passport with 15+ Months Validity', category: 'Mandatory', checked: true },
+            { id: 'vc-9', label: 'Academic Certificates & IELTS TRF', category: 'Academic', checked: true },
+            { id: 'vc-10', label: 'National Visa D Application Form Signed', category: 'Mandatory', checked: true },
+          ],
+        };
+        const updated: VisaProcessData = {
+          ...prevData,
+          ...data,
+        };
+        return {
+          ...s,
+          visaProcessDossier: updated,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Visa process updated: ${updated.status} (${updated.vfsCenter})`,
+              user: currentUser?.name || 'Visa Filing Officer',
+              type: 'system',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
+  };
+
+  const updatePreDepartureDossier = (studentId: string, data: Partial<PreDepartureData>) => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const prevData = s.preDepartureDossier || {
+          flightBooked: true,
+          airline: 'Air India / ITA Airways',
+          flightNo: 'AI-137 (DEL -> MXP)',
+          departureDate: '28 Aug 2026',
+          departureCity: 'New Delhi (DEL)',
+          arrivalAirport: 'Milan Malpensa (MXP)',
+          arrivalDate: '28 Aug 2026',
+          airportPickupScheduled: true,
+          pickupDriverContact: '+39 349 123 4567 (Marco - Padova Buddy)',
+          codiceFiscaleStatus: 'Generated & Verified',
+          codiceFiscaleNumber: 'SHRHLM99R15Z222X',
+          forexCardIssued: true,
+          forexCardNumber: '**** **** **** 8421 (Niyo Global / Thomas Cook)',
+          eSimActivated: true,
+          italianSimNumber: '+39 331 987 6543 (Iliad 150GB)',
+          permessoKitReady: true,
+          accommodationAddress: 'Residenza Universitaria Copernico, Via Copernico 9, Padova',
+          orientationAttended: true,
+          orientationDate: '20 Aug 2026',
+          lifecycleStatus: 'Pre-Departure Briefing',
+        };
+        const updated: PreDepartureData = {
+          ...prevData,
+          ...data,
+        };
+        return {
+          ...s,
+          preDepartureDossier: updated,
+          timeline: [
+            {
+              id: `tl-${Date.now()}`,
+              date: 'Today',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              action: `Pre-Departure status updated: ${updated.lifecycleStatus}`,
+              user: currentUser?.name || 'Arrival Coordinator',
+              type: 'system',
+            },
+            ...s.timeline,
+          ],
+        };
+      })
+    );
   };
 
   const toggleTask = (taskId: string) => {
@@ -662,6 +1050,15 @@ export const UpGradWorkflowProvider: React.FC<{ children: React.ReactNode }> = (
         recordStudentApproval,
         advanceApplicationStep,
         issueOfferLetter,
+        advanceToStage,
+        addOfferLetter,
+        updateOfferLetter,
+        confirmFinalUniversity,
+        updateScholarshipDossier,
+        updatePreEnrolmentDossier,
+        updateDovCimeaDossier,
+        updateVisaProcessDossier,
+        updatePreDepartureDossier,
         toggleTask,
         addStudentNote,
         resetDemoData,

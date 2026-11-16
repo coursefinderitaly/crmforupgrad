@@ -871,33 +871,186 @@ export const DashboardView: React.FC = () => {
                 })}
               </div>
             )}
+
+            {/* Table Bottom Insights / Summary Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-2 border-t border-slate-100 text-[11px] text-slate-500">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-slate-700">
+                  Showing {filteredStudents.length} of {students.length} Students
+                </span>
+                <span className="inline-block w-1 h-1 rounded-full bg-slate-300" />
+                <span className="text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">
+                  {students.filter((s) => s.stage === 'documentation').length} in Docs Review
+                </span>
+                <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                  {stats.offerReceived} Offers Won
+                </span>
+              </div>
+              <button
+                onClick={() => navigate('students')}
+                className="font-bold text-[#087cf5] hover:text-blue-700 hover:underline flex items-center gap-1 text-[11px]"
+              >
+                <span>Full Student Database</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          {/* Operational Sub-Deck: Fills and powers space below Student Table */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* 1. Today's Pending Follow-ups & Reminders */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-blue-50 text-[#087cf5] flex items-center justify-center shrink-0 border border-blue-100">
+                      <CheckSquare className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-xs font-black text-slate-900">Today&apos;s Follow-ups</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    {tasks.filter((t) => !t.completed).length} Pending
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {tasks.slice(0, 3).map((task) => (
+                    <div
+                      key={task.id}
+                      onClick={() => toggleTask(task.id)}
+                      className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-slate-100 cursor-pointer transition-colors group"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() => {}}
+                          className="rounded text-[#087cf5] focus:ring-0 cursor-pointer w-3.5 h-3.5"
+                        />
+                        <span
+                          className={`text-[11.5px] font-semibold truncate ${
+                            task.completed ? 'line-through text-slate-400' : 'text-slate-800'
+                          }`}
+                        >
+                          {task.title}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded shrink-0 ${
+                          task.tag === 'Due Now'
+                            ? 'bg-rose-100 text-rose-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {task.tag}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <span className="text-slate-400 font-medium">Daily calendar sync</span>
+                <button
+                  onClick={() => navigate('tasks')}
+                  className="font-bold text-[#087cf5] hover:underline flex items-center gap-1"
+                >
+                  <span>Manage Tasks</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Priority Document Verification Queue */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
+                      <FileCheck2 className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-xs font-black text-slate-900">Document Review Queue</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                    Live
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {students
+                    .filter((s) => s.stage === 'documentation' || s.documents?.some((d) => d.status === 'Pending' || d.status === 'Under Review'))
+                    .slice(0, 3)
+                    .map((s) => {
+                      const verifiedCount = s.documents?.filter((d) => d.status === 'Approved').length || 0;
+                      const totalDocs = s.documents?.length || 1;
+                      const pct = Math.round((verifiedCount / totalDocs) * 100);
+                      return (
+                        <div
+                          key={s.id}
+                          onClick={() => {
+                            setSelectedStudent(s);
+                            navigate('documentation', s.id);
+                          }}
+                          className="flex items-center justify-between p-2 rounded-lg hover:bg-purple-50/50 border border-slate-100 cursor-pointer transition-colors group"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-[11.5px] font-bold text-slate-800 group-hover:text-purple-700 truncate">
+                              {s.name}
+                            </div>
+                            <div className="text-[10px] text-slate-400 truncate">
+                              {s.courseInterest} &bull; {s.countryInterest}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-[10.5px] font-extrabold text-purple-700">
+                              {verifiedCount}/{totalDocs} ({pct}%)
+                            </span>
+                            <span className="text-[9px] text-slate-400 block font-semibold">Review &rarr;</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <span className="text-slate-400 font-medium">Direct review workspace</span>
+                <button
+                  onClick={() => navigate('documentation')}
+                  className="font-bold text-purple-600 hover:underline flex items-center gap-1"
+                >
+                  <span>Open Docs Portal</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Right Column: Lead / Student Comprehensive Details Inspector (4 cols ~ 34%) */}
         {activeStudent && (
-          <div className="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-2xs p-4 space-y-3.5 min-w-0">
+          <div className="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-2xs p-3 space-y-2.5 min-w-0">
             {/* Header with Avatar & Details */}
-            <div className="flex items-start justify-between gap-2.5">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <img
                   src={activeStudent.avatar}
                   alt={activeStudent.name}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-2xs shrink-0"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-blue-200 shadow-2xs shrink-0"
                 />
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-extrabold text-slate-900 truncate max-w-[150px]">
+                    <h3 className="text-xs font-black text-slate-900 truncate">
                       {activeStudent.name}
                     </h3>
-                    <span className="text-[9.5px] font-bold px-2 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
                       {activeStudent.stage}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                  <div className="text-[10px] text-slate-500 truncate mt-0.5">
                     Lead ID: <span className="font-mono font-bold text-slate-700">{activeStudent.leadId}</span>
                   </div>
-                  <div className="text-[10.5px] text-slate-400 truncate">
+                  <div className="text-[9.5px] text-slate-400 truncate">
                     {activeStudent.mobile} &bull; {activeStudent.email}
                   </div>
                 </div>
@@ -908,52 +1061,52 @@ export const DashboardView: React.FC = () => {
                 <button
                   onClick={() => alert(`Calling ${activeStudent.name}: ${activeStudent.mobile}`)}
                   title="Call student"
-                  className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"
+                  className="w-6.5 h-6.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"
                 >
-                  <Phone className="w-3.5 h-3.5" />
+                  <Phone className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => alert(`WhatsApp chat with ${activeStudent.name}`)}
                   title="WhatsApp"
-                  className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"
+                  className="w-6.5 h-6.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />
+                  <MessageCircle className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => navigate('students', activeStudent.id)}
                   title="Open Full Profile"
-                  className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"
+                  className="w-6.5 h-6.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3 h-3" />
                 </button>
               </div>
             </div>
 
             {/* ── Visual Workflow Pipeline Stepper ── */}
-            <div className="pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+            <div className="pt-1.5 border-t border-slate-100">
+              <div className="flex items-center justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                 <span>Pipeline Stage</span>
                 <span className="text-[#087cf5] font-black">{activeStudent.statusText}</span>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-[#087cf5] to-blue-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${getStagePercentage(activeStudent.stage)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[9px] font-bold text-slate-400 mt-1">
-                <span className={activeStudent.stage === 'registered' ? 'text-[#087cf5]' : ''}>Profile</span>
-                <span className={activeStudent.stage === 'enrolled' ? 'text-[#087cf5]' : ''}>Enrolled</span>
-                <span className={activeStudent.stage === 'documentation' ? 'text-[#087cf5]' : ''}>Docs</span>
-                <span className={activeStudent.stage === 'shortlisting' ? 'text-[#087cf5]' : ''}>Shortlist</span>
-                <span className={activeStudent.stage === 'student_approval' ? 'text-[#087cf5]' : ''}>Approval</span>
-                <span className={activeStudent.stage === 'application' ? 'text-[#087cf5]' : ''}>Apply</span>
-                <span className={activeStudent.stage === 'offer_received' ? 'text-emerald-600' : ''}>Offer</span>
+              <div className="flex items-center justify-between text-[8px] font-bold text-slate-400 mt-1">
+                <span className={activeStudent.stage === 'registered' ? 'text-[#087cf5] font-black' : ''}>Profile</span>
+                <span className={activeStudent.stage === 'enrolled' ? 'text-[#087cf5] font-black' : ''}>Enrolled</span>
+                <span className={activeStudent.stage === 'documentation' ? 'text-[#087cf5] font-black' : ''}>Docs</span>
+                <span className={activeStudent.stage === 'shortlisting' ? 'text-[#087cf5] font-black' : ''}>Shortlist</span>
+                <span className={activeStudent.stage === 'student_approval' ? 'text-[#087cf5] font-black' : ''}>Approval</span>
+                <span className={activeStudent.stage === 'application' ? 'text-[#087cf5] font-black' : ''}>Apply</span>
+                <span className={activeStudent.stage === 'offer_received' ? 'text-emerald-600 font-black' : ''}>Offer</span>
               </div>
             </div>
 
             {/* Inspector Navigation Tabs */}
-            <div className="flex items-center border-b border-slate-200 gap-1 text-[11px] font-bold text-slate-500 overflow-x-auto scrollbar-none">
+            <div className="flex items-center border-b border-slate-200 gap-1 text-[10.5px] font-bold text-slate-500 overflow-x-auto scrollbar-none">
               {(
                 [
                   { id: 'summary', label: 'Summary' },
@@ -966,7 +1119,7 @@ export const DashboardView: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setRightPanelTab(tab.id)}
-                  className={`pb-1.5 px-2 whitespace-nowrap transition-colors ${
+                  className={`pb-1 px-1.5 whitespace-nowrap transition-colors ${
                     rightPanelTab === tab.id
                       ? 'text-[#087cf5] border-b-2 border-[#087cf5]'
                       : 'hover:text-slate-800'
@@ -977,90 +1130,90 @@ export const DashboardView: React.FC = () => {
               ))}
             </div>
 
-            {/* ── Sub-tab 1: Complete Executive Summary & Section Links ── */}
+            {/* ── Sub-tab 1: Complete Executive Summary ── */}
             {rightPanelTab === 'summary' && (
-              <div className="space-y-3 text-xs">
-                {/* Study Preferences Summary */}
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-slate-600">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+              <div className="space-y-2 text-xs">
+                {/* Study Preferences & Academic Snapshot */}
+                <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-slate-600">
+                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                     <span>Target Study Plan</span>
-                    <span className="font-semibold text-slate-600">{activeStudent.universityType}</span>
+                    <span className="font-semibold text-slate-600 text-[8.5px] px-1.5 py-0.2 rounded bg-white border border-slate-200">{activeStudent.universityType}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Destination:</span>
-                    <span className="font-bold text-slate-900">{activeStudent.countryInterest}</span>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10.5px]">
+                    <div>
+                      <span className="text-slate-400 text-[9px] block">Destination</span>
+                      <span className="font-bold text-slate-900">{activeStudent.countryInterest}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[9px] block">Intake / Budget</span>
+                      <span className="font-bold text-slate-900 truncate block">{activeStudent.intake} &bull; {activeStudent.budget}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-slate-400 text-[9px] block">Program</span>
+                      <span className="font-bold text-slate-900 truncate block" title={activeStudent.courseInterest}>
+                        {activeStudent.courseInterest}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Program:</span>
-                    <span className="font-bold text-slate-900 truncate max-w-[170px]" title={activeStudent.courseInterest}>
-                      {activeStudent.courseInterest}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Intake / Budget:</span>
-                    <span className="font-bold text-slate-800">
-                      {activeStudent.intake} &bull; {activeStudent.budget}
-                    </span>
+
+                  {/* Academic & Documents Snapshot inline */}
+                  <div className="pt-1.5 border-t border-slate-200/60 grid grid-cols-2 gap-1.5 text-center">
+                    <div className="py-1 px-1.5 rounded-lg bg-blue-50/70 border border-blue-100 flex items-center justify-between">
+                      <span className="text-[9.5px] text-slate-500">Graduation</span>
+                      <span className="font-extrabold text-blue-700 text-[10.5px]">{activeStudent.graduationScore}</span>
+                    </div>
+                    <div className="py-1 px-1.5 rounded-lg bg-emerald-50/70 border border-emerald-100 flex items-center justify-between">
+                      <span className="text-[9.5px] text-slate-500">{activeStudent.testType}</span>
+                      <span className="font-extrabold text-emerald-700 text-[10.5px]">{activeStudent.overallBand} Band</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Academic & Documents Snapshot */}
-                <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-blue-50/60 border border-blue-100">
-                    <span className="text-[10px] text-slate-500 block">Graduation</span>
-                    <span className="font-extrabold text-blue-700 text-xs">{activeStudent.graduationScore}</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-emerald-50/60 border border-emerald-100">
-                    <span className="text-[10px] text-slate-500 block">{activeStudent.testType} Band</span>
-                    <span className="font-extrabold text-emerald-700 text-xs">{activeStudent.overallBand}</span>
-                  </div>
-                </div>
-
-                {/* Live Section Direct Jump Shortcuts */}
+                {/* Quick Section Shortcuts */}
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Quick Section Links
+                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Quick Section Jump
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-1">
                     <button
                       onClick={() => navigate('documentation', activeStudent.id)}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-left text-[11px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:border-purple-300 hover:bg-purple-50 text-[10.5px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
                     >
-                      <span className="group-hover:text-purple-700">Documentation</span>
-                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-purple-600" />
+                      <span className="group-hover:text-purple-700 truncate">Documentation</span>
+                      <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-purple-600 shrink-0" />
                     </button>
                     <button
                       onClick={() => navigate('shortlisting', activeStudent.id)}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-left text-[11px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-[10.5px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
                     >
-                      <span className="group-hover:text-blue-700">Shortlisting</span>
-                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                      <span className="group-hover:text-blue-700 truncate">Shortlisting</span>
+                      <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-blue-600 shrink-0" />
                     </button>
                     <button
                       onClick={() => navigate('student-approval', activeStudent.id)}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-left text-[11px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-[10.5px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
                     >
-                      <span className="group-hover:text-emerald-700">Student Approval</span>
-                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-emerald-600" />
+                      <span className="group-hover:text-emerald-700 truncate">Approval</span>
+                      <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-emerald-600 shrink-0" />
                     </button>
                     <button
                       onClick={() => navigate('applications', activeStudent.id)}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-left text-[11px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
+                      className="px-2 py-1 rounded-md border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-[10.5px] font-bold text-slate-700 flex items-center justify-between group transition-colors"
                     >
-                      <span className="group-hover:text-cyan-700">Applications</span>
-                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-cyan-600" />
+                      <span className="group-hover:text-cyan-700 truncate">Applications</span>
+                      <ArrowRight className="w-2.5 h-2.5 text-slate-400 group-hover:text-cyan-600 shrink-0" />
                     </button>
                   </div>
                 </div>
 
                 {/* Follow-up reminder */}
-                <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 flex items-start gap-2">
-                  <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <div className="font-bold text-amber-900 text-[11.5px]">
+                <div className="p-2 rounded-lg bg-amber-50/80 border border-amber-200 flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-amber-900 text-[10.5px] truncate">
                       Follow-up: {activeStudent.nextFollowUpDate} at {activeStudent.nextFollowUpTime || '11:00 AM'}
                     </div>
-                    <div className="text-[10.5px] text-amber-800 leading-snug mt-0.5">
+                    <div className="text-[9.5px] text-amber-800 leading-snug truncate">
                       {activeStudent.nextFollowUpNote || 'Discuss university application documents and finalize choices.'}
                     </div>
                   </div>
@@ -1290,16 +1443,16 @@ export const DashboardView: React.FC = () => {
             )}
 
             {/* ── Direct Stage Advancement Action Button ── */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
+            <div className="space-y-1.5 pt-1.5 border-t border-slate-100">
               {activeStudent.stage === 'registered' || activeStudent.stage === 'counselling' || activeStudent.stage === 'enrolled' ? (
                 <button
                   onClick={() => {
                     advanceToEnrolled(activeStudent.id);
                     navigate('documentation', activeStudent.id);
                   }}
-                  className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                   <span>Complete Profile &rarr; Advance to Docs</span>
                 </button>
               ) : activeStudent.stage === 'documentation' ? (
@@ -1308,9 +1461,9 @@ export const DashboardView: React.FC = () => {
                     advanceToShortlisting(activeStudent.id);
                     navigate('shortlisting', activeStudent.id);
                   }}
-                  className="w-full py-2 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-1.5 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <FileCheck2 className="w-4 h-4 shrink-0" />
+                  <FileCheck2 className="w-3.5 h-3.5 shrink-0" />
                   <span>Docs Complete &rarr; Open Shortlisting</span>
                 </button>
               ) : activeStudent.stage === 'shortlisting' ? (
@@ -1319,9 +1472,9 @@ export const DashboardView: React.FC = () => {
                     sendToStudentApproval(activeStudent.id);
                     navigate('student-approval', activeStudent.id);
                   }}
-                  className="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <GraduationCap className="w-4 h-4 shrink-0" />
+                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
                   <span>Shortlist Ready &rarr; Send for Student Approval</span>
                 </button>
               ) : activeStudent.stage === 'student_approval' ? (
@@ -1333,35 +1486,35 @@ export const DashboardView: React.FC = () => {
                     );
                     navigate('applications', activeStudent.id);
                   }}
-                  className="w-full py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <CheckSquare className="w-4 h-4 shrink-0" />
+                  <CheckSquare className="w-3.5 h-3.5 shrink-0" />
                   <span>Student Confirmed &rarr; Open Applications</span>
                 </button>
               ) : (
                 <button
                   onClick={() => navigate('applications', activeStudent.id)}
-                  className="w-full py-2 px-3 rounded-lg bg-[#087cf5] hover:bg-[#006ee6] text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-1.5 px-3 rounded-lg bg-[#087cf5] hover:bg-[#006ee6] text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
-                  <Send className="w-4 h-4 shrink-0" />
+                  <Send className="w-3.5 h-3.5 shrink-0" />
                   <span>Manage Active Applications</span>
                 </button>
               )}
 
               {/* Secondary Fast Action Buttons */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => alert(`Scheduling appointment for ${activeStudent.name}...`)}
-                  className="py-1.5 px-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11.5px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                  className="py-1 px-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <Calendar className="w-3 h-3 text-slate-500 shrink-0" />
                   <span>Schedule Call</span>
                 </button>
                 <button
                   onClick={() => alert(`Dispatching email update to ${activeStudent.email}...`)}
-                  className="py-1.5 px-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11.5px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                  className="py-1 px-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
                 >
-                  <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <Mail className="w-3 h-3 text-slate-500 shrink-0" />
                   <span>Send Email</span>
                 </button>
               </div>
