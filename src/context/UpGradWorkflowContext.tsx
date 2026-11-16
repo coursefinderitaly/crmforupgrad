@@ -73,10 +73,10 @@ export const UpGradWorkflowProvider: React.FC<{ children: React.ReactNode }> = (
       const stored = localStorage.getItem(AUTH_KEY);
       return stored ? JSON.parse(stored) : {
         name: 'Pooja Verma',
-        email: 'upgrad@crm.com',
-        role: 'UpGrad Channel Partner Lead',
+        email: 'lead@crm.com',
+        role: 'CRM Lead',
         avatar: '/avatars/priya.png',
-        portal: 'upGrad Global Degree Portal',
+        portal: 'CRM Workspace',
       };
     } catch {
       return null;
@@ -141,17 +141,18 @@ export const UpGradWorkflowProvider: React.FC<{ children: React.ReactNode }> = (
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPass = (pass || '').trim();
 
-    if (
-      (cleanEmail === 'upgrad@crm.com' && (cleanPass === 'upgrad123' || cleanPass === 'admin123')) ||
-      (cleanEmail === 'partner@crm.com' && (cleanPass === 'partner123' || cleanPass === 'upgrad123')) ||
-      (cleanEmail === 'counsellor@crm.com' && cleanPass === 'counsellor123')
-    ) {
+    // Only the CRM lead account can sign in
+    const isLeadAccount =
+      (cleanEmail === 'lead@crm.com' && (cleanPass === 'crm123' || cleanPass === 'admin123')) ||
+      (cleanEmail === 'upgrad@crm.com' && (cleanPass === 'upgrad123' || cleanPass === 'admin123'));
+
+    if (isLeadAccount) {
       const user: AuthUser = {
-        name: cleanEmail.includes('partner') ? 'UpGrad Channel Partner' : 'Pooja Verma (UpGrad Lead)',
+        name: 'Pooja Verma',
         email: cleanEmail,
-        role: 'UpGrad Global Education Lead',
+        role: 'CRM Lead',
         avatar: '/avatars/priya.png',
-        portal: 'upGrad Global Degree Portal',
+        portal: 'CRM Workspace',
       };
       setCurrentUser(user);
       setIsAuthenticated(true);
@@ -159,7 +160,7 @@ export const UpGradWorkflowProvider: React.FC<{ children: React.ReactNode }> = (
       return { success: true };
     }
 
-    return { success: false, error: 'Invalid credentials. Use upgrad@crm.com / upgrad123 or partner@crm.com / partner123' };
+    return { success: false, error: 'Invalid email or password. Please try again.' };
   };
 
   const logout = () => {

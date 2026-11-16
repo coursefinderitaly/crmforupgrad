@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UpGradWorkflowProvider, useUpGradWorkflow } from './context/UpGradWorkflowContext';
-import { UpGradLoginView } from './views/UpGradLoginView';
+import { LoginView } from './views/LoginView';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { DashboardView } from './views/DashboardView';
@@ -30,9 +30,9 @@ const AppContent: React.FC = () => {
   const { isAuthenticated, currentRoute } = useUpGradWorkflow();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-  // Dedicated UpGrad Login Window if not authenticated
+  // Dedicated Login Window if not authenticated
   if (!isAuthenticated) {
-    return <UpGradLoginView />;
+    return <LoginView />;
   }
 
   return (

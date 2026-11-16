@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Filter,
   Layers,
+  LayoutGrid,
   ChevronRight,
   Sparkles,
   Edit,
@@ -66,12 +67,13 @@ export const DashboardView: React.FC = () => {
   } = useUpGradWorkflow();
 
   const [activeTab, setActiveTab] = useState<
-    'all' | 'counselling' | 'enrolled' | 'documentation' | 'shortlisting' | 'student_approval' | 'application' | 'offer_received'
+    'all' | 'enrolled' | 'documentation' | 'shortlisting' | 'student_approval' | 'application' | 'offer_received'
   >('all');
   const [rightPanelTab, setRightPanelTab] = useState<
     'summary' | 'academic' | 'documents' | 'applications' | 'counselling'
   >('summary');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+  const [lifecycleViewMode, setLifecycleViewMode] = useState<'grid' | 'rail'>('grid');
   const [searchTableQuery, setSearchTableQuery] = useState('');
   const [countryFilter, setCountryFilter] = useState('all');
   const [newNoteText, setNewNoteText] = useState('');
@@ -80,8 +82,7 @@ export const DashboardView: React.FC = () => {
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       // Tab filter
-      if (activeTab === 'counselling' && s.stage !== 'counselling' && s.stage !== 'registered') return false;
-      if (activeTab === 'enrolled' && s.stage !== 'enrolled') return false;
+      if (activeTab === 'enrolled' && s.stage !== 'enrolled' && s.stage !== 'registered' && s.stage !== 'counselling') return false;
       if (activeTab === 'documentation' && s.stage !== 'documentation') return false;
       if (activeTab === 'shortlisting' && s.stage !== 'shortlisting') return false;
       if (activeTab === 'student_approval' && s.stage !== 'student_approval') return false;
@@ -111,10 +112,10 @@ export const DashboardView: React.FC = () => {
 
   const activeStudent: Student = selectedStudent || filteredStudents[0] || students[0];
 
-  // Real-time lifecycle stage counts
+  // Real-time lifecycle stage counts (counsellor step removed from pipeline)
   const lifecycleStageCounts = useMemo(() => {
     return {
-      counsellor: students.filter((s) => s.stage === 'registered' || s.stage === 'counselling').length,
+      profileEnrolled: students.filter((s) => s.stage === 'registered' || s.stage === 'enrolled' || s.stage === 'counselling').length,
       documentation: students.filter((s) => s.stage === 'documentation').length,
       shortlisting: students.filter((s) => s.stage === 'shortlisting').length,
       studentApproval: students.filter((s) => s.stage === 'student_approval').length,
@@ -130,13 +131,209 @@ export const DashboardView: React.FC = () => {
     };
   }, [students, tasks]);
 
-  // Bar Chart Data (Counselling Summary)
+  // 12-Stage Lifecycle Navigator Data
+  const lifecycleStages = useMemo(() => [
+    {
+      step: '01',
+      id: 'students',
+      name: 'Candidate Profiles',
+      shortName: 'Profiles',
+      sub: 'Enrolment & Leads',
+      icon: Users,
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
+      borderHover: 'hover:border-blue-300 hover:bg-blue-50/30',
+      activeBorder: 'border-blue-400 bg-blue-50/50 ring-1 ring-blue-400',
+      badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+      count: lifecycleStageCounts.profileEnrolled,
+      phase: 1,
+      isActiveStudentHere: ['registered', 'enrolled', 'counselling'].includes(activeStudent?.stage),
+    },
+    {
+      step: '02',
+      id: 'documentation',
+      name: 'Documentation',
+      shortName: 'Docs',
+      sub: 'Academic Verification',
+      icon: FileCheck2,
+      color: 'text-purple-600',
+      bg: 'bg-purple-50',
+      borderHover: 'hover:border-purple-300 hover:bg-purple-50/30',
+      activeBorder: 'border-purple-400 bg-purple-50/50 ring-1 ring-purple-400',
+      badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+      count: lifecycleStageCounts.documentation,
+      phase: 1,
+      isActiveStudentHere: activeStudent?.stage === 'documentation',
+    },
+    {
+      step: '03',
+      id: 'shortlisting',
+      name: 'Uni Shortlisting',
+      shortName: 'Shortlist',
+      sub: 'Course Matching',
+      icon: GraduationCap,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      borderHover: 'hover:border-indigo-300 hover:bg-indigo-50/30',
+      activeBorder: 'border-indigo-400 bg-indigo-50/50 ring-1 ring-indigo-400',
+      badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      count: lifecycleStageCounts.shortlisting,
+      phase: 1,
+      isActiveStudentHere: activeStudent?.stage === 'shortlisting',
+    },
+    {
+      step: '04',
+      id: 'student-approval',
+      name: 'Student Approval',
+      shortName: 'Approval',
+      sub: 'Choice Lock & Consent',
+      icon: CheckSquare,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+      borderHover: 'hover:border-emerald-300 hover:bg-emerald-50/30',
+      activeBorder: 'border-emerald-400 bg-emerald-50/50 ring-1 ring-emerald-400',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      count: lifecycleStageCounts.studentApproval,
+      phase: 1,
+      isActiveStudentHere: activeStudent?.stage === 'student_approval',
+    },
+    {
+      step: '05',
+      id: 'applications',
+      name: 'Applications',
+      shortName: 'Apply',
+      sub: 'Direct Uni Submissions',
+      icon: Send,
+      color: 'text-cyan-600',
+      bg: 'bg-cyan-50',
+      borderHover: 'hover:border-cyan-300 hover:bg-cyan-50/30',
+      activeBorder: 'border-cyan-400 bg-cyan-50/50 ring-1 ring-cyan-400',
+      badgeClass: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+      count: lifecycleStageCounts.applications,
+      phase: 1,
+      isActiveStudentHere: activeStudent?.stage === 'application',
+    },
+    {
+      step: '06',
+      id: 'offer-letters',
+      name: 'Offer Letters',
+      shortName: 'Offers',
+      sub: 'Admissions & Decisions',
+      icon: Award,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+      borderHover: 'hover:border-emerald-300 hover:bg-emerald-50/30',
+      activeBorder: 'border-emerald-400 bg-emerald-50/50 ring-1 ring-emerald-400',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      count: lifecycleStageCounts.offerLetters,
+      phase: 1,
+      isActiveStudentHere: activeStudent?.stage === 'offer_received',
+    },
+    {
+      step: '07',
+      id: 'final-university',
+      name: 'Final University',
+      shortName: 'Final Uni',
+      sub: 'Enrolment Deposit',
+      icon: Building2,
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
+      borderHover: 'hover:border-blue-300 hover:bg-blue-50/30',
+      activeBorder: 'border-blue-400 bg-blue-50/50 ring-1 ring-blue-400',
+      badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+      count: lifecycleStageCounts.finalUni,
+      phase: 2,
+      isActiveStudentHere: false,
+    },
+    {
+      step: '08',
+      id: 'scholarship',
+      name: 'Scholarships & Grants',
+      shortName: 'Grants',
+      sub: 'Regional DSU Funding',
+      icon: Sparkles,
+      color: 'text-amber-600',
+      bg: 'bg-amber-50',
+      borderHover: 'hover:border-amber-300 hover:bg-amber-50/30',
+      activeBorder: 'border-amber-400 bg-amber-50/50 ring-1 ring-amber-400',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+      count: lifecycleStageCounts.scholarship,
+      phase: 2,
+      isActiveStudentHere: Boolean(activeStudent?.scholarshipInterest),
+    },
+    {
+      step: '09',
+      id: 'pre-enrolment',
+      name: 'Universitaly Portal',
+      shortName: 'Universitaly',
+      sub: 'Official Italian Portal',
+      icon: Monitor,
+      color: 'text-rose-600',
+      bg: 'bg-rose-50',
+      borderHover: 'hover:border-rose-300 hover:bg-rose-50/30',
+      activeBorder: 'border-rose-400 bg-rose-50/50 ring-1 ring-rose-400',
+      badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+      count: lifecycleStageCounts.preEnrolment,
+      phase: 2,
+      isActiveStudentHere: false,
+    },
+    {
+      step: '10',
+      id: 'dov-cimea',
+      name: 'DoV & CIMEA',
+      shortName: 'DoV / CIMEA',
+      sub: 'Degree Equivalence',
+      icon: FileText,
+      color: 'text-teal-600',
+      bg: 'bg-teal-50',
+      borderHover: 'hover:border-teal-300 hover:bg-teal-50/30',
+      activeBorder: 'border-teal-400 bg-teal-50/50 ring-1 ring-teal-400',
+      badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
+      count: lifecycleStageCounts.dovCimea,
+      phase: 2,
+      isActiveStudentHere: false,
+    },
+    {
+      step: '11',
+      id: 'visa-process',
+      name: 'Visa Process (VFS)',
+      shortName: 'Visa (VFS)',
+      sub: 'Embassy & Appointments',
+      icon: Plane,
+      color: 'text-sky-600',
+      bg: 'bg-sky-50',
+      borderHover: 'hover:border-sky-300 hover:bg-sky-50/30',
+      activeBorder: 'border-sky-400 bg-sky-50/50 ring-1 ring-sky-400',
+      badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
+      count: lifecycleStageCounts.visa,
+      phase: 2,
+      isActiveStudentHere: false,
+    },
+    {
+      step: '12',
+      id: 'pre-departure',
+      name: 'Pre-Departure',
+      shortName: 'Arrival',
+      sub: 'Housing & Relocation',
+      icon: Compass,
+      color: 'text-violet-600',
+      bg: 'bg-violet-50',
+      borderHover: 'hover:border-violet-300 hover:bg-violet-50/30',
+      activeBorder: 'border-violet-400 bg-violet-50/50 ring-1 ring-violet-400',
+      badgeClass: 'bg-violet-50 text-violet-700 border-violet-200',
+      count: lifecycleStageCounts.preDeparture,
+      phase: 2,
+      isActiveStudentHere: false,
+    },
+  ], [lifecycleStageCounts, activeStudent]);
+
+  // Bar Chart Data (Conversion Funnel)
   const barData = [
     { name: 'Leads', count: stats.totalLeads, fill: '#087cf5' },
-    { name: 'Contacted', count: stats.contacted, fill: '#10b981' },
-    { name: 'Counselling', count: stats.counselling, fill: '#f59e0b' },
+    { name: 'Profile Done', count: stats.contacted, fill: '#10b981' },
     { name: 'Enrolled', count: stats.enrolled, fill: '#f43f5e' },
     { name: 'In Docs', count: stats.transferredDocs, fill: '#8b5cf6' },
+    { name: 'Shortlisted', count: lifecycleStageCounts.shortlisting, fill: '#6366f1' },
     { name: 'Applied', count: stats.inApplication, fill: '#06b6d4' },
     { name: 'Admitted', count: stats.offerReceived, fill: '#10b981' },
   ];
@@ -163,15 +360,23 @@ export const DashboardView: React.FC = () => {
   // Helper for stage progress percent
   const getStagePercentage = (stage: Student['stage']) => {
     switch (stage) {
-      case 'registered': return 14;
-      case 'counselling': return 28;
-      case 'enrolled': return 42;
-      case 'documentation': return 57;
-      case 'shortlisting': return 71;
-      case 'student_approval': return 85;
-      case 'application': return 92;
-      case 'offer_received': return 100;
-      default: return 15;
+      case 'registered':
+      case 'counselling':
+        return 18;
+      case 'enrolled':
+        return 35;
+      case 'documentation':
+        return 52;
+      case 'shortlisting':
+        return 68;
+      case 'student_approval':
+        return 82;
+      case 'application':
+        return 92;
+      case 'offer_received':
+        return 100;
+      default:
+        return 20;
     }
   };
 
@@ -229,26 +434,7 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        {/* Counselling Done */}
-        <div
-          onClick={() => setActiveTab('counselling')}
-          className={`bg-white rounded-xl p-3 border transition-all cursor-pointer flex items-center gap-3 ${
-            activeTab === 'counselling'
-              ? 'border-[#087cf5] shadow-sm ring-1 ring-[#087cf5]/30'
-              : 'border-slate-200 hover:border-slate-300 shadow-2xs'
-          }`}
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <FileText className="w-5 h-5" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-xl font-black text-slate-900 leading-tight">{stats.counselling}</div>
-            <div className="text-[11px] font-semibold text-slate-500 truncate">Counselling</div>
-            <div className="text-[10px] font-bold text-amber-600 truncate">Assessed</div>
-          </div>
-        </div>
-
-        {/* Enrolled */}
+        {/* Profile Ready / Enrolled */}
         <div
           onClick={() => setActiveTab('enrolled')}
           className={`bg-white rounded-xl p-3 border transition-all cursor-pointer flex items-center gap-3 ${
@@ -257,13 +443,28 @@ export const DashboardView: React.FC = () => {
               : 'border-slate-200 hover:border-slate-300 shadow-2xs'
           }`}
         >
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xl font-black text-slate-900 leading-tight">{lifecycleStageCounts.profileEnrolled}</div>
+            <div className="text-[11px] font-semibold text-slate-500 truncate">Profiles Ready</div>
+            <div className="text-[10px] font-bold text-amber-600 truncate">Enrolled</div>
+          </div>
+        </div>
+
+        {/* Enrolled Active */}
+        <div
+          onClick={() => setActiveTab('enrolled')}
+          className="bg-white rounded-xl p-3 border border-slate-200 hover:border-slate-300 shadow-2xs transition-all cursor-pointer flex items-center gap-3"
+        >
           <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div className="min-w-0">
             <div className="text-xl font-black text-slate-900 leading-tight">{stats.enrolled}</div>
-            <div className="text-[11px] font-semibold text-slate-500 truncate">Enrolled</div>
-            <div className="text-[10px] font-bold text-rose-600 truncate">Paid &amp; Active</div>
+            <div className="text-[11px] font-semibold text-slate-500 truncate">Agreement Done</div>
+            <div className="text-[10px] font-bold text-rose-600 truncate">Contract Signed</div>
           </div>
         </div>
 
@@ -325,254 +526,219 @@ export const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* ── 2. Full Lifecycle Stage Navigator (Instant Link & Summary of All Sections) ── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-[#087cf5]" />
-            <span className="text-[12px] font-extrabold text-slate-900 tracking-tight">
-              Lifecycle Stage Navigator
-            </span>
-            <span className="text-[10px] font-semibold text-slate-400">
-              Direct access &amp; live counts across all operational stages
-            </span>
+      {/* ── 2. Full Lifecycle Stage Navigator (Direct Links Across All Stages) ── */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3.5 sm:p-4">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#087cf5] flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] font-black text-slate-900 tracking-tight">
+                  Lifecycle Stage Navigator
+                </span>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80">
+                  12 Operational Stages
+                </span>
+                {activeStudent && (
+                  <span className="hidden sm:inline-flex text-[10px] font-semibold text-slate-400">
+                    Active Student: <span className="font-bold text-slate-700 ml-1">{activeStudent.name}</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                Direct access across all operational stages · Click any stage to open its dedicated view
+              </p>
+            </div>
           </div>
 
-          <button
-            onClick={() => navigate('students')}
-            className="text-[11px] font-bold text-[#087cf5] hover:underline flex items-center gap-1"
-          >
-            <span>View All Students</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View switcher: Grid (2x6) vs Pipeline Rail */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/80 text-[11px] font-bold text-slate-600">
+              <button
+                type="button"
+                onClick={() => setLifecycleViewMode('grid')}
+                className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
+                  lifecycleViewMode === 'grid'
+                    ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
+                    : 'hover:text-slate-900'
+                }`}
+                title="Structured 2-Phase Grid Overview"
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-[#087cf5]" />
+                <span>Grid View</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLifecycleViewMode('rail')}
+                className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
+                  lifecycleViewMode === 'rail'
+                    ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
+                    : 'hover:text-slate-900'
+                }`}
+                title="Continuous Linear Workflow Rail"
+              >
+                <ArrowRight className="w-3.5 h-3.5 text-[#087cf5]" />
+                <span>Timeline Rail</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => navigate('students')}
+              className="text-[11px] font-bold text-[#087cf5] hover:text-blue-700 hover:underline flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50/60 hover:bg-blue-50 border border-blue-100 transition-colors"
+            >
+              <span>View All Students</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Quick Lifecycle Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-          {/* Counsellor */}
-          <button
-            onClick={() => navigate('counsellor', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <UserCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-blue-700 truncate">
-                Counsellor
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-blue-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.counsellor}
-            </span>
-          </button>
+        {/* Content based on lifecycleViewMode */}
+        {lifecycleViewMode === 'grid' ? (
+          <div className="space-y-3">
+            {/* Phase 1: Admissions & Applications */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 px-0.5">
+                <span className="text-[10px] font-black tracking-wider uppercase text-slate-400">
+                  Phase 1 · Admission & Applications (Steps 01 – 06)
+                </span>
+                <div className="h-px bg-slate-100 flex-1" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                {lifecycleStages.slice(0, 6).map((stage) => (
+                  <button
+                    key={stage.id}
+                    onClick={() => navigate(stage.id, activeStudent?.id)}
+                    className={`p-2.5 rounded-xl border text-left transition-all group flex flex-col justify-between relative bg-white hover:shadow-xs ${
+                      stage.isActiveStudentHere
+                        ? `${stage.activeBorder} shadow-2xs`
+                        : `border-slate-200/90 ${stage.borderHover}`
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[10px] font-black text-slate-400 group-hover:text-slate-600 transition-colors shrink-0">
+                          {stage.step}
+                        </span>
+                        <div className={`w-6 h-6 rounded-lg ${stage.bg} ${stage.color} flex items-center justify-center shrink-0 border border-slate-100 shadow-2xs group-hover:scale-105 transition-transform`}>
+                          <stage.icon className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md border shadow-2xs shrink-0 ${stage.badgeClass}`}>
+                        {stage.count}
+                      </span>
+                    </div>
 
-          {/* Documentation */}
-          <button
-            onClick={() => navigate('documentation', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-purple-50/60 border border-slate-200/80 hover:border-purple-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <FileCheck2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-purple-700 truncate">
-                Documentation
-              </span>
+                    <div className="min-w-0 w-full">
+                      <div className="text-[11.5px] font-extrabold text-slate-800 group-hover:text-[#087cf5] transition-colors leading-snug truncate">
+                        {stage.name}
+                      </div>
+                      <div className="text-[9.5px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors leading-tight truncate mt-0.5 flex items-center justify-between">
+                        <span className="truncate">{stage.sub}</span>
+                        <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#087cf5] shrink-0" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-purple-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.documentation}
-            </span>
-          </button>
 
-          {/* Shortlisting */}
-          <button
-            onClick={() => navigate('shortlisting', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <GraduationCap className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-indigo-700 truncate">
-                Shortlisting
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-indigo-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.shortlisting}
-            </span>
-          </button>
+            {/* Phase 2: Enrolment, Visa & Arrival */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 px-0.5">
+                <span className="text-[10px] font-black tracking-wider uppercase text-slate-400">
+                  Phase 2 · Enrolment, Visa & Relocation (Steps 07 – 12)
+                </span>
+                <div className="h-px bg-slate-100 flex-1" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                {lifecycleStages.slice(6, 12).map((stage) => (
+                  <button
+                    key={stage.id}
+                    onClick={() => navigate(stage.id, activeStudent?.id)}
+                    className={`p-2.5 rounded-xl border text-left transition-all group flex flex-col justify-between relative bg-white hover:shadow-xs ${
+                      stage.isActiveStudentHere
+                        ? `${stage.activeBorder} shadow-2xs`
+                        : `border-slate-200/90 ${stage.borderHover}`
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[10px] font-black text-slate-400 group-hover:text-slate-600 transition-colors shrink-0">
+                          {stage.step}
+                        </span>
+                        <div className={`w-6 h-6 rounded-lg ${stage.bg} ${stage.color} flex items-center justify-center shrink-0 border border-slate-100 shadow-2xs group-hover:scale-105 transition-transform`}>
+                          <stage.icon className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md border shadow-2xs shrink-0 ${stage.badgeClass}`}>
+                        {stage.count}
+                      </span>
+                    </div>
 
-          {/* Student Approval */}
-          <button
-            onClick={() => navigate('student-approval', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 hover:border-emerald-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <CheckSquare className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-emerald-700 truncate">
-                Approval
-              </span>
+                    <div className="min-w-0 w-full">
+                      <div className="text-[11.5px] font-extrabold text-slate-800 group-hover:text-[#087cf5] transition-colors leading-snug truncate">
+                        {stage.name}
+                      </div>
+                      <div className="text-[9.5px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors leading-tight truncate mt-0.5 flex items-center justify-between">
+                        <span className="truncate">{stage.sub}</span>
+                        <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#087cf5] shrink-0" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-emerald-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.studentApproval}
-            </span>
-          </button>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-0.5 scrollbar-thin scroll-smooth">
+              {lifecycleStages.map((stage, idx) => (
+                <React.Fragment key={stage.id}>
+                  <button
+                    onClick={() => navigate(stage.id, activeStudent?.id)}
+                    className={`shrink-0 w-44 p-2.5 rounded-xl border text-left transition-all group flex flex-col justify-between bg-white hover:shadow-xs ${
+                      stage.isActiveStudentHere
+                        ? `${stage.activeBorder} shadow-2xs`
+                        : `border-slate-200/90 ${stage.borderHover}`
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[10px] font-black text-slate-400 group-hover:text-slate-600 shrink-0">
+                          {stage.step}
+                        </span>
+                        <div className={`w-6 h-6 rounded-lg ${stage.bg} ${stage.color} flex items-center justify-center shrink-0 border border-slate-100 shadow-2xs group-hover:scale-105 transition-transform`}>
+                          <stage.icon className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md border shadow-2xs shrink-0 ${stage.badgeClass}`}>
+                        {stage.count}
+                      </span>
+                    </div>
 
-          {/* Applications */}
-          <button
-            onClick={() => navigate('applications', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-cyan-50/60 border border-slate-200/80 hover:border-cyan-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Send className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-cyan-700 truncate">
-                Applications
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-cyan-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.applications}
-            </span>
-          </button>
+                    <div className="min-w-0 w-full">
+                      <div className="text-[11.5px] font-extrabold text-slate-800 group-hover:text-[#087cf5] transition-colors leading-snug truncate">
+                        {stage.name}
+                      </div>
+                      <div className="text-[9.5px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors leading-tight truncate mt-0.5">
+                        {stage.sub}
+                      </div>
+                    </div>
+                  </button>
 
-          {/* Offer Letters */}
-          <button
-            onClick={() => navigate('offer-letters', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 hover:border-emerald-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-emerald-700 truncate">
-                Offer Letters
-              </span>
+                  {idx < lifecycleStages.length - 1 && (
+                    <div className="shrink-0 text-slate-300">
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
             </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-emerald-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.offerLetters}
-            </span>
-          </button>
-
-          {/* Final University */}
-          <button
-            onClick={() => navigate('final-university', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-blue-700 truncate">
-                Final Uni
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-blue-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.finalUni}
-            </span>
-          </button>
-
-          {/* Scholarship */}
-          <button
-            onClick={() => navigate('scholarship', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-amber-50/60 border border-slate-200/80 hover:border-amber-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-amber-700 truncate">
-                Scholarship
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-amber-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.scholarship}
-            </span>
-          </button>
-
-          {/* Pre-Enrolment */}
-          <button
-            onClick={() => navigate('pre-enrolment', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-rose-50/60 border border-slate-200/80 hover:border-rose-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Monitor className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-rose-700 truncate">
-                Pre-Enrolment
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-rose-700 shadow-2xs shrink-0">
-              Universitaly
-            </span>
-          </button>
-
-          {/* DoV / CIMEA */}
-          <button
-            onClick={() => navigate('dov-cimea', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 hover:border-teal-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <FileText className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-teal-700 truncate">
-                DoV / CIMEA
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-teal-700 shadow-2xs shrink-0">
-              Equiv.
-            </span>
-          </button>
-
-          {/* Visa Process */}
-          <button
-            onClick={() => navigate('visa-process', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-sky-50/60 border border-slate-200/80 hover:border-sky-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Plane className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-sky-700 truncate">
-                Visa Process
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-sky-700 shadow-2xs shrink-0">
-              File Prep
-            </span>
-          </button>
-
-          {/* Pre-Departure */}
-          <button
-            onClick={() => navigate('pre-departure', activeStudent?.id)}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Compass className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-indigo-700 truncate">
-                Pre-Departure
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-indigo-700 shadow-2xs shrink-0">
-              Arrival
-            </span>
-          </button>
-
-          {/* Finance & Invoicing */}
-          <button
-            onClick={() => navigate('finance')}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 hover:border-emerald-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <CreditCard className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-emerald-700 truncate">
-                Finance
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-emerald-700 shadow-2xs shrink-0">
-              Fees
-            </span>
-          </button>
-
-          {/* Tasks & Agenda */}
-          <button
-            onClick={() => navigate('tasks')}
-            className="p-2 rounded-lg bg-slate-50 hover:bg-amber-50/60 border border-slate-200/80 hover:border-amber-200 text-left transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <CheckSquare className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="text-[11px] font-bold text-slate-700 group-hover:text-amber-700 truncate">
-                Tasks Due
-              </span>
-            </div>
-            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-white text-amber-700 shadow-2xs shrink-0">
-              {lifecycleStageCounts.tasks}
-            </span>
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* ── 3. Main Workstation: Pipeline Table (65%) + Comprehensive Inspector Drawer (35%) ── */}
@@ -592,17 +758,17 @@ export const DashboardView: React.FC = () => {
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  All ({students.length})
+                  All Leads ({students.length})
                 </button>
                 <button
-                  onClick={() => setActiveTab('counselling')}
+                  onClick={() => setActiveTab('enrolled')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    activeTab === 'counselling'
+                    activeTab === 'enrolled'
                       ? 'bg-[#087cf5] text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  Counselling ({students.filter((s) => s.stage === 'counselling' || s.stage === 'registered').length})
+                  Enrolled ({lifecycleStageCounts.profileEnrolled})
                 </button>
                 <button
                   onClick={() => setActiveTab('documentation')}
@@ -991,8 +1157,7 @@ export const DashboardView: React.FC = () => {
                 />
               </div>
               <div className="flex items-center justify-between text-[9px] font-bold text-slate-400 mt-1">
-                <span className={activeStudent.stage === 'registered' ? 'text-[#087cf5]' : ''}>Lead</span>
-                <span className={activeStudent.stage === 'counselling' ? 'text-[#087cf5]' : ''}>Counselling</span>
+                <span className={activeStudent.stage === 'registered' ? 'text-[#087cf5]' : ''}>Profile</span>
                 <span className={activeStudent.stage === 'enrolled' ? 'text-[#087cf5]' : ''}>Enrolled</span>
                 <span className={activeStudent.stage === 'documentation' ? 'text-[#087cf5]' : ''}>Docs</span>
                 <span className={activeStudent.stage === 'shortlisting' ? 'text-[#087cf5]' : ''}>Shortlist</span>
@@ -1304,15 +1469,15 @@ export const DashboardView: React.FC = () => {
               </div>
             )}
 
-            {/* ── Sub-tab 5: Counselling & Internal Notes ── */}
+            {/* ── Sub-tab 5: Profile Notes ── */}
             {rightPanelTab === 'counselling' && (
               <div className="space-y-3 text-xs">
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700">
-                  <div className="font-bold text-slate-900 mb-1 text-[11.5px]">Counsellor Assessment</div>
-                  <p className="leading-relaxed">{activeStudent.counsellingNotes}</p>
+                  <div className="font-bold text-slate-900 mb-1 text-[11.5px]">Profile Assessment</div>
+                  <p className="leading-relaxed">{activeStudent.counsellingNotes || 'Profile verified. Ready for university documentation and applications.'}</p>
                   <div className="mt-2 pt-2 border-t border-slate-200 text-[10.5px] text-slate-500 flex justify-between">
-                    <span>Counsellor: <strong className="text-slate-800">{activeStudent.assignedCounsellor}</strong></span>
-                    <span>Docs Exec: <strong className="text-slate-800">{activeStudent.assignedDocExecutive}</strong></span>
+                    <span>Officer: <strong className="text-slate-800">{activeStudent.assignedCounsellor || 'Admissions Team'}</strong></span>
+                    <span>Docs Exec: <strong className="text-slate-800">{activeStudent.assignedDocExecutive || 'Documentation Team'}</strong></span>
                   </div>
                 </div>
 
@@ -1325,7 +1490,7 @@ export const DashboardView: React.FC = () => {
                     rows={2}
                     value={newNoteText}
                     onChange={(e) => setNewNoteText(e.target.value)}
-                    placeholder="Enter counsellor interaction note or next action..."
+                    placeholder="Enter interaction note or next action..."
                     className="w-full p-2 text-xs rounded-lg border border-slate-200 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#087cf5]"
                   />
                   <button
@@ -1341,7 +1506,7 @@ export const DashboardView: React.FC = () => {
 
             {/* ── Direct Stage Advancement Action Button ── */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
-              {activeStudent.stage === 'registered' || activeStudent.stage === 'counselling' ? (
+              {activeStudent.stage === 'registered' || activeStudent.stage === 'counselling' || activeStudent.stage === 'enrolled' ? (
                 <button
                   onClick={() => {
                     advanceToEnrolled(activeStudent.id);
@@ -1350,7 +1515,7 @@ export const DashboardView: React.FC = () => {
                   className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Mark Enrolled &amp; Transfer to Docs</span>
+                  <span>Complete Profile &rarr; Advance to Docs</span>
                 </button>
               ) : activeStudent.stage === 'documentation' ? (
                 <button
@@ -1401,7 +1566,7 @@ export const DashboardView: React.FC = () => {
               {/* Secondary Fast Action Buttons */}
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => alert(`Scheduling counselling appointment for ${activeStudent.name}...`)}
+                  onClick={() => alert(`Scheduling appointment for ${activeStudent.name}...`)}
                   className="py-1.5 px-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11.5px] font-semibold flex items-center justify-center gap-1 transition-colors"
                 >
                   <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -1478,11 +1643,11 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        {/* Widget 2: Counselling Funnel Bar Chart */}
+        {/* Widget 2: Funnel Bar Chart */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-xs font-bold text-slate-900">Conversion Funnel</h4>
-            <span className="text-[10.5px] font-semibold text-slate-400">Live Stage Metric</span>
+            <span className="text-[10.5px] font-semibold text-slate-400">Live Metric</span>
           </div>
 
           <div className="h-44 w-full">

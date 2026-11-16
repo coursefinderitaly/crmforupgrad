@@ -25,14 +25,12 @@ The application runs at **`http://localhost:5174/`**.
 
 ---
 
-## 🔐 Dedicated upGrad Login Window
+## 🔐 CRM Login
 
-The portal features an independent, branded login window:
-- **Default Email:** `upgrad@crm.com`
-- **Default Password:** `upgrad123`
-- **Partner Email:** `partner@crm.com`
-- **Partner Password:** `partner123`
-- **Quick-fill buttons:** One-click demo credential autofill.
+The portal uses a single, centered CRM login:
+
+- **Email:** `lead@crm.com`
+- **Password:** `crm123`
 - **Log out:** Accessible from the top header user dropdown at any time.
 
 ---
@@ -143,7 +141,7 @@ Each stage in the pipeline seamlessly hands over the candidate to the next team 
     │   └── modals/
     │       └── RegisterStudentModal.tsx # Step 1 lead registration modal
     └── views/
-        ├── UpGradLoginView.tsx              # Dedicated UpGrad login window
+        ├── LoginView.tsx                     # Centered CRM login screen
         ├── DashboardView.tsx                # Matches Dashboard.jpeg
         ├── MyStudentsView.tsx               # Matches students.jpeg
         ├── DocumentationView.tsx            # Matches documentation.jpeg
