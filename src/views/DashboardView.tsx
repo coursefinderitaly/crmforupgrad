@@ -908,136 +908,6 @@ export const DashboardView: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* Operational Sub-Deck: Fills and powers space below Student Table */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* 1. Today's Pending Follow-ups & Reminders */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3.5 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-blue-50 text-[#087cf5] flex items-center justify-center shrink-0 border border-blue-100">
-                      <CheckSquare className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-xs font-black text-slate-900">Today&apos;s Follow-ups</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    {tasks.filter((t) => !t.completed).length} Pending
-                  </span>
-                </div>
-
-                <div className="space-y-1.5">
-                  {tasks.slice(0, 3).map((task) => (
-                    <div
-                      key={task.id}
-                      onClick={() => toggleTask(task.id)}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-slate-100 cursor-pointer transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <input
-                          type="checkbox"
-                          checked={task.completed}
-                          onChange={() => {}}
-                          className="rounded text-[#087cf5] focus:ring-0 cursor-pointer w-3.5 h-3.5"
-                        />
-                        <span
-                          className={`text-[11.5px] font-semibold truncate ${
-                            task.completed ? 'line-through text-slate-400' : 'text-slate-800'
-                          }`}
-                        >
-                          {task.title}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded shrink-0 ${
-                          task.tag === 'Due Now'
-                            ? 'bg-rose-100 text-rose-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {task.tag}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-medium">Daily calendar sync</span>
-                <button
-                  onClick={() => navigate('tasks')}
-                  className="font-bold text-[#087cf5] hover:underline flex items-center gap-1"
-                >
-                  <span>Manage Tasks</span>
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-            {/* 2. Priority Document Verification Queue */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-3.5 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-                      <FileCheck2 className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="text-xs font-black text-slate-900">Document Review Queue</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-                    Live
-                  </span>
-                </div>
-
-                <div className="space-y-1.5">
-                  {students
-                    .filter((s) => s.stage === 'documentation' || s.documents?.some((d) => d.status === 'Pending' || d.status === 'Under Review'))
-                    .slice(0, 3)
-                    .map((s) => {
-                      const verifiedCount = s.documents?.filter((d) => d.status === 'Approved').length || 0;
-                      const totalDocs = s.documents?.length || 1;
-                      const pct = Math.round((verifiedCount / totalDocs) * 100);
-                      return (
-                        <div
-                          key={s.id}
-                          onClick={() => {
-                            setSelectedStudent(s);
-                            navigate('documentation', s.id);
-                          }}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-purple-50/50 border border-slate-100 cursor-pointer transition-colors group"
-                        >
-                          <div className="min-w-0">
-                            <div className="text-[11.5px] font-bold text-slate-800 group-hover:text-purple-700 truncate">
-                              {s.name}
-                            </div>
-                            <div className="text-[10px] text-slate-400 truncate">
-                              {s.courseInterest} &bull; {s.countryInterest}
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className="text-[10.5px] font-extrabold text-purple-700">
-                              {verifiedCount}/{totalDocs} ({pct}%)
-                            </span>
-                            <span className="text-[9px] text-slate-400 block font-semibold">Review &rarr;</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-medium">Direct review workspace</span>
-                <button
-                  onClick={() => navigate('documentation')}
-                  className="font-bold text-purple-600 hover:underline flex items-center gap-1"
-                >
-                  <span>Open Docs Portal</span>
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Column: Lead / Student Comprehensive Details Inspector (4 cols ~ 34%) */}
@@ -1751,173 +1621,250 @@ export const DashboardView: React.FC = () => {
         )}
       </div>
 
-      {/* ── 4. Bottom Analytics & Operational Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 items-stretch">
-        {/* Widget 1: Today's Tasks */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                <CheckSquare className="w-4 h-4 text-[#087cf5]" />
-                <span>Today&apos;s Follow-ups</span>
-              </h4>
-              <button
-                onClick={() => navigate('tasks')}
-                className="text-[11px] font-semibold text-[#087cf5] hover:underline"
-              >
-                View All
-              </button>
-            </div>
+      {/* ── 4. Bottom Operational Activity & Analytics ── */}
+      <div className="space-y-3.5">
+        {/* Row 1: Today's Follow-ups & Document Review Queue */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-stretch">
+          {/* Card 1: Today's Follow-ups */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#087cf5] flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
+                    <CheckSquare className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-slate-900 tracking-tight">Today&apos;s Follow-ups</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  {tasks.filter((t) => !t.completed).length} Pending
+                </span>
+              </div>
 
-            <div className="space-y-2">
-              {tasks.slice(0, 4).map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => toggleTask(task.id)}
-                  className="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer border border-slate-100"
-                >
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => {}}
-                    className="mt-0.5 rounded text-[#087cf5] focus:ring-blue-400 cursor-pointer"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-xs font-semibold leading-snug truncate ${
-                        task.completed ? 'line-through text-slate-400' : 'text-slate-800'
-                      }`}
-                    >
-                      {task.title}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-slate-400">{task.time}</span>
+              <div className="space-y-2">
+                {tasks.slice(0, 4).map((task) => (
+                  <div
+                    key={task.id}
+                    onClick={() => toggleTask(task.id)}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-slate-100 cursor-pointer transition-colors group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => {}}
+                        className="rounded text-[#087cf5] focus:ring-0 cursor-pointer w-3.5 h-3.5"
+                      />
                       <span
-                        className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded ${
-                          task.tag === 'Due Now'
-                            ? 'bg-rose-100 text-rose-700'
-                            : 'bg-amber-100 text-amber-700'
+                        className={`text-xs font-semibold truncate ${
+                          task.completed ? 'line-through text-slate-400' : 'text-slate-800'
                         }`}
                       >
-                        {task.tag}
+                        {task.title}
                       </span>
                     </div>
+                    <span
+                      className={`text-[9.5px] font-extrabold px-1.5 py-0.2 rounded shrink-0 ${
+                        task.tag === 'Due Now'
+                          ? 'bg-rose-100 text-rose-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}
+                    >
+                      {task.tag}
+                    </span>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2.5 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400 font-medium">Daily calendar sync</span>
+              <button
+                onClick={() => navigate('tasks')}
+                className="font-bold text-[#087cf5] hover:underline flex items-center gap-1"
+              >
+                <span>Manage All Tasks</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Card 2: Document Review Queue */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100 shadow-2xs">
+                    <FileCheck2 className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-slate-900 tracking-tight">Document Review Queue</span>
                 </div>
-              ))}
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                  Live Action
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {students
+                  .filter((s) => s.stage === 'documentation' || s.documents?.some((d) => d.status === 'Pending' || d.status === 'Under Review'))
+                  .slice(0, 3)
+                  .map((s) => {
+                    const verifiedCount = s.documents?.filter((d) => d.status === 'Approved').length || 0;
+                    const totalDocs = s.documents?.length || 1;
+                    const pct = Math.round((verifiedCount / totalDocs) * 100);
+                    return (
+                      <div
+                        key={s.id}
+                        onClick={() => {
+                          setSelectedStudent(s);
+                          navigate('documentation', s.id);
+                        }}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-purple-50/50 border border-slate-100 cursor-pointer transition-colors group"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-800 group-hover:text-purple-700 truncate">
+                            {s.name}
+                          </div>
+                          <div className="text-[10.5px] text-slate-400 truncate mt-0.5">
+                            {s.courseInterest} &bull; {s.countryInterest}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[11px] font-extrabold text-purple-700">
+                            {verifiedCount}/{totalDocs} ({pct}%)
+                          </span>
+                          <span className="text-[9.5px] text-slate-400 block font-semibold">Review &rarr;</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="pt-2.5 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400 font-medium">Direct review workspace</span>
+              <button
+                onClick={() => navigate('documentation')}
+                className="font-bold text-purple-600 hover:underline flex items-center gap-1"
+              >
+                <span>Open Documentation Portal</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Widget 2: Funnel Bar Chart */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold text-slate-900">Conversion Funnel</h4>
-            <span className="text-[10.5px] font-semibold text-slate-400">Live Metric</span>
-          </div>
+        {/* Row 2: Analytics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 items-stretch">
+          {/* Widget 1: Funnel Bar Chart */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-bold text-slate-900">Conversion Funnel</h4>
+              <span className="text-[10.5px] font-semibold text-slate-400">Live Metric</span>
+            </div>
 
-          <div className="h-44 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
-                <YAxis tick={{ fontSize: 9 }} />
-                <Tooltip />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Widget 3: Lead Source Breakdown Donut Chart */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-1">
-            <h4 className="text-xs font-bold text-slate-900">Lead Source Channels</h4>
-            <span className="text-[10px] font-semibold text-slate-400">Monthly</span>
-          </div>
-
-          <div className="flex items-center justify-between h-44">
-            <div className="w-1/2 h-full flex items-center justify-center relative">
+            <div className="h-44 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    innerRadius={32}
-                    outerRadius={52}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
+                <BarChart data={barData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} />
+                  <YAxis tick={{ fontSize: 9 }} />
                   <Tooltip />
-                </PieChart>
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
-              <div className="absolute text-center pointer-events-none">
-                <span className="text-xs font-black text-slate-900">{stats.totalLeads}</span>
-                <span className="text-[9px] text-slate-400 block">Total</span>
-              </div>
+            </div>
+          </div>
+
+          {/* Widget 2: Lead Source Breakdown Donut Chart */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-1">
+              <h4 className="text-xs font-bold text-slate-900">Lead Source Channels</h4>
+              <span className="text-[10px] font-semibold text-slate-400">Monthly</span>
             </div>
 
-            <div className="w-1/2 space-y-1 text-[11px] text-slate-600 pl-2">
-              {pieData.map((d) => (
-                <div key={d.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="truncate">{d.name}</span>
-                  </div>
-                  <span className="font-bold text-slate-800 shrink-0">{d.value}%</span>
+            <div className="flex items-center justify-between h-44">
+              <div className="w-1/2 h-full flex items-center justify-center relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      innerRadius={32}
+                      outerRadius={52}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute text-center pointer-events-none">
+                  <span className="text-xs font-black text-slate-900">{stats.totalLeads}</span>
+                  <span className="text-[9px] text-slate-400 block">Total</span>
                 </div>
-              ))}
+              </div>
+
+              <div className="w-1/2 space-y-1 text-[11px] text-slate-600 pl-2">
+                {pieData.map((d) => (
+                  <div key={d.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                      <span className="truncate">{d.name}</span>
+                    </div>
+                    <span className="font-bold text-slate-800 shrink-0">{d.value}%</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Widget 4: Destination Country Demand */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold text-slate-900">Country Demand</h4>
-            <span className="text-[10px] font-semibold text-slate-400">Top Destinations</span>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            <div>
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>🇮🇹 Italy</span>
-                <span className="font-bold text-slate-900">16 Leads</span>
-              </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#087cf5] h-full rounded-full" style={{ width: '65%' }} />
-              </div>
+          {/* Widget 3: Destination Country Demand */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold text-slate-900">Country Demand</h4>
+              <span className="text-[10px] font-semibold text-slate-400">Top Destinations</span>
             </div>
 
-            <div>
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>🇩🇪 Germany</span>
-                <span className="font-bold text-slate-900">10 Leads</span>
+            <div className="space-y-2.5 text-xs">
+              <div>
+                <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <span>🇮🇹 Italy</span>
+                  <span className="font-bold text-slate-900">16 Leads</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#087cf5] h-full rounded-full" style={{ width: '65%' }} />
+                </div>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#10b981] h-full rounded-full" style={{ width: '45%' }} />
-              </div>
-            </div>
 
-            <div>
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>🇨🇦 Canada</span>
-                <span className="font-bold text-slate-900">8 Leads</span>
+              <div>
+                <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <span>🇩🇪 Germany</span>
+                  <span className="font-bold text-slate-900">10 Leads</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#10b981] h-full rounded-full" style={{ width: '45%' }} />
+                </div>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#f59e0b] h-full rounded-full" style={{ width: '35%' }} />
-              </div>
-            </div>
 
-            <div>
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>🇬🇧 United Kingdom</span>
-                <span className="font-bold text-slate-900">6 Leads</span>
+              <div>
+                <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <span>🇨🇦 Canada</span>
+                  <span className="font-bold text-slate-900">8 Leads</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#f59e0b] h-full rounded-full" style={{ width: '35%' }} />
+                </div>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-[#8b5cf6] h-full rounded-full" style={{ width: '25%' }} />
+
+              <div>
+                <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <span>🇬🇧 United Kingdom</span>
+                  <span className="font-bold text-slate-900">6 Leads</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#8b5cf6] h-full rounded-full" style={{ width: '25%' }} />
+                </div>
               </div>
             </div>
           </div>
